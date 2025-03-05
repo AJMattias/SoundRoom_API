@@ -5,7 +5,7 @@ import {SoundRoomsServer} from "./server/server.js"
 
 const app = express()
 // Si APP_PORT esta definido, parseamos el port number, si no usamos 3000 por defecto
-const port : number = process.env.APP_PORT ? parseInt(process.env.APP_PORT) : 30000
+const port : number = process.env.PORT ? parseInt(process.env.PORT) : 30000
 
 //Logica de error handling y salida forzada del sistema.
 process.on('uncaughtException', (error) =>{
