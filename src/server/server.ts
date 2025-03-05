@@ -6,7 +6,8 @@ const middleware = require("./middleware")
 const handler  = require("../common/exception/handler.js")
 import multer from 'multer'
 import path from "path";
-
+import * as dotenv from "dotenv";
+dotenv.config();
 
     
 /**
