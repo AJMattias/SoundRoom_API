@@ -66,8 +66,11 @@ export class SoundRoomsServer {
 
             // esta carpeta sera usada para almacenar  archivos publicos
             this._app.use('/uploads', express.static(path.resolve('uploads')));
-            this._app.listen(port)
-            console.log("App started successfully")
+            // this._app.listen(port)
+            // console.log("App started successfully")
+            this._app.listen(port, () => {
+                console.log(`App started successfully on port ${port}`);
+            });
         })
         .catch((error) => {
             console.error("Error initialazing the app")
