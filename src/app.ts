@@ -15,4 +15,4 @@ process.on('uncaughtException', (error) =>{
 
 
 const server = new SoundRoomsServer(app)
-server.start(port)
+server.start(3000)
