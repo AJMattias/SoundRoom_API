@@ -49,6 +49,7 @@
     "uuidv4": "^6.2.13"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/fs-extra": "^11.0.4"
   }
 }

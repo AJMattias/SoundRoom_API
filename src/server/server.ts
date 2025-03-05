@@ -6,6 +6,7 @@ const middleware = require("./middleware")
 const handler  = require("../common/exception/handler.js")
 import multer from 'multer'
 import path from "path";
+import cors from "cors";
 import * as dotenv from "dotenv";
 dotenv.config();
 
@@ -43,6 +44,17 @@ export class SoundRoomsServer {
             //         fileSize:10000000 //10mb
             //     }
             // }))
+
+            const allowedOrigins = [
+                'http://localhost:3000', // Si es en desarrollo
+                'https://tu-frontend-en-produccion.com' // Agrega tu dominio de producción aquí
+            ];
+
+            this._app.use(cors({
+                origin: allowedOrigins,  // Permitir solo estos orígenes
+                methods: ['GET', 'POST', 'PUT', 'DELETE'],
+                allowedHeaders: ['Content-Type', 'Authorization']
+            }));
             this._app.use(express.json());
             this._app.use(express.urlencoded({extended: false}))
             this._app.use('/uploads', express.static(path.resolve('uploads')))
