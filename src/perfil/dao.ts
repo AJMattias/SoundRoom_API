@@ -51,12 +51,13 @@ export class PerfilDao{
         return this.mapToPermiso(updated)
     }
 
-    async deletePermiso(id: string): Promise<Permiso>{
+    async deletePermiso(id: string): Promise<{msg: boolean}>{
         const updated = await PermisoModel.findByIdAndDelete({_id: id}).exec()
         if (!updated) {
             throw new ModelNotFoundException()
         }
-        return this.mapToPermiso(updated)
+        // return this.mapToPermiso({msg:true})
+        return ({msg:true})
     }
 
 

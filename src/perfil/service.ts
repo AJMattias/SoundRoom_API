@@ -125,15 +125,16 @@ export class PerfilService{
             })
         )
     }
-    async deletePermiso(id: string): Promise<PermisoDto>{
-        return this.mapToDtoP(
-            await this.dao.deletePermiso(id)
+    async deletePermiso(id: string): Promise<{msg: boolean}>{
+        // return this.mapToDtoP(
+        //     await this.dao.deletePermiso(id)
             // , {
             //     name: dto.name,
             //     deletedAt: new Date(),
             //     enabled:false,
             // }
-            )
+            //)
+        return await this.dao.deletePermiso(id)
     }
 
 
