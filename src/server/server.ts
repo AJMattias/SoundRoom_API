@@ -46,7 +46,7 @@ export class SoundRoomsServer {
             // }))
 
             const allowedOrigins = [
-                'http://localhost:3000', // Si es en desarrollo
+                'http://localhost:5173', // Si es en desarrollo
                 'https://tu-frontend-en-produccion.com' // Agrega tu dominio de producción aquí
             ];
 
