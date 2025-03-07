@@ -163,6 +163,7 @@ export class PerfilDao{
             { $set: { permisos: permisosObjectIds } },
             { new: true } // Devuelve el documento actualizado
         ).exec();
+        console.log('permisos de perfil actualizado', updated)
     
         if (!updated) {
             throw new ModelNotFoundException();
