@@ -141,6 +141,7 @@ export class PerfilDao{
     }
 
     async addPermisosToPerfil(perfilId: string, permisos: string[]): Promise<Perfil> {
+        console.log('permisos a actualizar en perfil: ', permisos)
         const permisosObjectIds = this.convertToObjectIdArray(permisos);
         // Paso 1: Obtener el perfil actual para verificar si tiene el atributo permisos
         const perfilActual = await PerfilModel.findById(perfilId).exec();
