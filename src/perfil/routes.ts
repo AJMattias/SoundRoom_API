@@ -144,15 +144,15 @@ export const route = (app: Application) => {
                 if(errors && !errors.isEmpty()){
                     throw ValidatorUtils.toArgumentsException(errors.array())
                 }
-            const dto = req.body
+            const permisos: string[] = req.body.permisos
             const id = req.query.id as string
             const perfilOriginal : PerfilDto = await service.instance.findPerfilById(id)
-                if(!dto["name"]){
-                    dto["name"] = perfilOriginal["name"];
-                }
+                // if(!dto["name"]){
+                //     dto["name"] = perfilOriginal["name"];
+                // }
             const perfil = await service.instance.addPermisoToPerfil(id, {
                 //name: dto["name"],
-                permisos: dto["permisos"]
+                permisos
             })
             resp.json(perfil)
         })
