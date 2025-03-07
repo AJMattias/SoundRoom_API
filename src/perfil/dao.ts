@@ -140,37 +140,69 @@ export class PerfilDao{
         }
     }
 
+    // async addPermisosToPerfil(perfilId: string, permisos: string[]): Promise<Perfil> {
+    //     console.log('permisos a actualizar en perfil: ', permisos)
+    //     const permisosObjectIds = this.convertToObjectIdArray(permisos);
+    //     // Paso 1: Obtener el perfil actual para verificar si tiene el atributo permisos
+    //     const perfilActual = await PerfilModel.findById(perfilId).exec();
+
+    //     if (!perfilActual) {
+    //         throw new Error("Perfil not found");
+    //     }
+
+    //     // Paso 2: Si el perfil tiene el atributo permisos, eliminarlo
+    //     if (perfilActual.permisos) {
+    //         await PerfilModel.updateOne(
+    //             { _id: perfilId },
+    //             { $unset: { permisos: "" } }
+    //         ).exec();
+    //     }
+
+    //     // Paso 3: Actualizar el perfil con los nuevos permisos
+    //     const updated = await PerfilModel.findByIdAndUpdate(
+    //         perfilId,
+    //         { $set: { permisos: permisosObjectIds } },
+    //         { new: true } // Devuelve el documento actualizado
+    //     ).exec();
+    //     console.log('permisos de perfil actualizado', updated)
+    
+    //     if (!updated) {
+    //         throw new ModelNotFoundException();
+    //     }
+    //     return this.mapToPerfil(updated);
+    // }
+
     async addPermisosToPerfil(perfilId: string, permisos: string[]): Promise<Perfil> {
-        console.log('permisos a actualizar en perfil: ', permisos)
+        console.log('permisos a actualizar en perfil: ', permisos);
         const permisosObjectIds = this.convertToObjectIdArray(permisos);
         // Paso 1: Obtener el perfil actual para verificar si tiene el atributo permisos
         const perfilActual = await PerfilModel.findById(perfilId).exec();
-
+      
         if (!perfilActual) {
-            throw new Error("Perfil not found");
+          throw new Error("Perfil not found");
         }
-
+      
         // Paso 2: Si el perfil tiene el atributo permisos, eliminarlo
         if (perfilActual.permisos) {
-            await PerfilModel.updateOne(
-                { _id: perfilId },
-                { $unset: { permisos: "" } }
-            ).exec();
+          await PerfilModel.updateOne(
+            { _id: perfilId },
+            { $unset: { permisos: "" } }
+          ).exec();
         }
-
+      
         // Paso 3: Actualizar el perfil con los nuevos permisos
         const updated = await PerfilModel.findByIdAndUpdate(
-            perfilId,
-            { $set: { permisos: permisosObjectIds } },
-            { new: true } // Devuelve el documento actualizado
+          perfilId,
+          { $set: { permisos: permisosObjectIds } },
+          { new: true, useFindAndModify: false }
         ).exec();
-        console.log('permisos de perfil actualizado', updated)
-    
+        console.log('permisos de perfil actualizado', updated);
+      
         if (!updated) {
-            throw new ModelNotFoundException();
+          throw new ModelNotFoundException();
         }
         return this.mapToPerfil(updated);
-    }
+      }
 
      convertToObjectIdArray(ids: string[]): mongoose.Types.ObjectId[] {
         const uniqueIds = Array.from(new Set(ids)); // Elimina duplicados

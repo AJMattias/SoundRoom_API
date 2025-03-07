@@ -136,27 +136,45 @@ export const route = (app: Application) => {
     })
     )
 
-    app.put("/perfil/addPermisoToPerfil/",
-        auth, admin,
+    // app.put("/perfil/addPermisoToPerfil/",
+    //     auth, admin,
+    //     validator.query("id").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
+    //     run( async( req: Request, resp: Response) => {
+    //         const errors = validator.validationResult(req)
+    //             if(errors && !errors.isEmpty()){
+    //                 throw ValidatorUtils.toArgumentsException(errors.array())
+    //             }
+    //         const permisos: string[] = req.body.permisos
+    //         const id = req.query.id as string
+    //         const perfilOriginal : PerfilDto = await service.instance.findPerfilById(id)
+    //             // if(!dto["name"]){
+    //             //     dto["name"] = perfilOriginal["name"];
+    //             // }
+    //         const perfil = await service.instance.addPermisoToPerfil(id,
+    //             //name: dto["name"],
+    //             permisos
+    //         )
+    //         resp.json(perfil)
+    //     })
+    // )
+
+    app.put(
+        "/perfil/addPermisoToPerfil/",
+        auth,
+        admin,
         validator.query("id").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
-        run( async( req: Request, resp: Response) => {
-            const errors = validator.validationResult(req)
-                if(errors && !errors.isEmpty()){
-                    throw ValidatorUtils.toArgumentsException(errors.array())
-                }
-            const permisos: string[] = req.body.permisos
-            const id = req.query.id as string
-            const perfilOriginal : PerfilDto = await service.instance.findPerfilById(id)
-                // if(!dto["name"]){
-                //     dto["name"] = perfilOriginal["name"];
-                // }
-            const perfil = await service.instance.addPermisoToPerfil(id,
-                //name: dto["name"],
-                permisos
-            )
-            resp.json(perfil)
+        run(async (req: Request, resp: Response) => {
+          const errors = validator.validationResult(req);
+          if (errors && !errors.isEmpty()) {
+            throw ValidatorUtils.toArgumentsException(errors.array());
+          }
+          const permisos: string[] = req.body.permisos;
+          const id = req.query.id as string;
+          const perfilOriginal: PerfilDto = await service.instance.findPerfilById(id);
+          const perfil = await service.instance.addPermisoToPerfil(id, permisos); // Llamada al servicio correcto
+          resp.json(perfil);
         })
-        )
+      );
 
     app.put("/perfil/deletePermisoFromPerfil/",
         auth, admin,
