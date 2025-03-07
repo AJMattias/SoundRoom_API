@@ -42,10 +42,10 @@ export class PerfilService{
             })
         )  
     }
-    async addPermisoToPerfil(id: string, dto: { permisos: string[] }): Promise<PerfilDto>{
-        console.log('servicio perfil - add permisos to perfil- id, dto: ', id, dto)
+    async addPermisoToPerfil(id: string, permisos: string[]): Promise<PerfilDto>{
+        console.log('servicio perfil - add permisos to perfil- id, dto: ', id, permisos)
         return this.mapToDto(
-            await this.dao.addPermisosToPerfil(id, dto.permisos)
+            await this.dao.addPermisosToPerfil(id, permisos)
         )  
     }
     

@@ -150,10 +150,10 @@ export const route = (app: Application) => {
                 // if(!dto["name"]){
                 //     dto["name"] = perfilOriginal["name"];
                 // }
-            const perfil = await service.instance.addPermisoToPerfil(id, {
+            const perfil = await service.instance.addPermisoToPerfil(id,
                 //name: dto["name"],
                 permisos
-            })
+            )
             resp.json(perfil)
         })
         )
