@@ -51,14 +51,48 @@ export class PerfilDao{
         return this.mapToPermiso(updated)
     }
 
-    async deletePermiso(id: string): Promise<{msg: boolean}>{
-        const updated = await PermisoModel.findByIdAndDelete({_id: id}).exec()
-        if (!updated) {
-            throw new ModelNotFoundException()
-        }
-        // return this.mapToPermiso({msg:true})
-        return ({msg:true})
+
+    async findPerfilesByPermisoId(idPermiso: string): Promise<Perfil[]> {
+        const objectId = new mongoose.Types.ObjectId(idPermiso);
+        
+        const perfiles = await PerfilModel.find({ 
+            permisos: objectId 
+        } as any).exec(); // Solo para emergencias
+    
+        return perfiles.map((doc: PerfilDoc) => this.mapToPerfil(doc));
     }
+
+    async deletePermiso(id: string): Promise<{msg: boolean}>{
+
+        const todosPerfiles = await PerfilModel.find().exec();
+        const permisoId = new mongoose.Types.ObjectId(id);
+
+        for (const perfil of todosPerfiles) {
+            // Convertir permisos a array de strings para comparar
+            const permisosStrings = perfil.permisos?.map(p => p.toString()) || [];
+            
+            if (permisosStrings.includes(permisoId.toString())) {
+                // Filtrar y mantener como ObjectId
+                const nuevosPermisos = perfil.permisos?.filter(p => 
+                    p.toString() !== permisoId.toString()
+                ) || [];
+
+                // Actualizar con type assertion
+                await PerfilModel.findByIdAndUpdate(
+                    perfil._id,
+                    { permisos: nuevosPermisos as any }, // <--- Solución clave
+                    { new: true }
+                ).exec();
+            }
+        }
+
+        const deleted = await PermisoModel.findByIdAndDelete(permisoId).exec();
+        if (!deleted) throw new ModelNotFoundException();
+
+        return { msg: true };
+    
+    }
+
 
 
     mapToPermiso(document: PermisoDoc): Permiso {
@@ -79,14 +113,15 @@ export class PerfilDao{
         })
     }
 
-    // //Para buscar un perfil con sus permisos asignados, hacemos uso de la funcion
-    // //populate, esta funcion busca el/los id/s relacionados y trae su entidad/es
-    // //generando asi un array con los permisos dentro del perfilbuscado
+    //Para buscar un perfil con sus permisos asignados, hacemos uso de la funcion
+    //populate, esta funcion busca el/los id/s relacionados y trae su entidad/es
+    //generando asi un array con los permisos dentro del perfilbuscado
     async findPerfilById(perfilId: String): Promise<Perfil>{
         const model = await PerfilModel.findById(perfilId).populate("permisos").exec()
         if(!model) throw new ModelNotFoundException()
             return this.mapToPerfil(model)
     }    
+
 
     async updatePerfil(perfilId: String, perfil: CreatePerfilDto): Promise<Perfil>{
         const updated = await PerfilModel.findByIdAndUpdate(perfilId,{

@@ -269,6 +269,7 @@ export class UsersService{
      *  Este token se va a usar en todas las requests para un usuario autenticado.
      */
     async login(email : string , password: string) : Promise<LoginResponseDto>{
+        console.log(' srvicio auth - email, password: ', email, password)
         const user = await this.dao.findByEmail(email)
         if(user.password != password){
             throw new AuthenticationException()

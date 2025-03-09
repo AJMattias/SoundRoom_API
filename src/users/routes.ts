@@ -376,9 +376,10 @@ export const route = (app: Application) => {
         validator.body("email").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
         validator.body("password").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),        
         run(async (req: Request, resp: Response) => {
-         // https://dev.to/jahangeer/node-js-api-authentication-with-jwt-json-web-token-auth-middleware-ggm
-         // autenticar a un usuario a partir de un email y password.
-         // retornar jwt token para el usuario creado.
+        // https://dev.to/jahangeer/node-js-api-authentication-with-jwt-json-web-token-auth-middleware-ggm
+        // autenticar a un usuario a partir de un email y password.
+        // retornar jwt token para el usuario creado.
+         console.log("email, password: ", req.body.email, req.body.password)
          const errors = validator.validationResult(req)
           if(errors && !errors.isEmpty()){
             throw ValidatorUtils.toArgumentsException(errors.array())

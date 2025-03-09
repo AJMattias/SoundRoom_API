@@ -169,6 +169,7 @@ export const route = (app: Application) => {
             throw ValidatorUtils.toArgumentsException(errors.array());
           }
           const permisos: string[] = req.body.permisos;
+          console.log('ruta perfil, permisos: ', permisos)
           const id = req.query.id as string;
           const perfilOriginal: PerfilDto = await service.instance.findPerfilById(id);
           const perfil = await service.instance.addPermisoToPerfil(id, permisos); // Llamada al servicio correcto

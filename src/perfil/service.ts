@@ -25,6 +25,7 @@ export class PerfilService{
         return this.mapToDto(perfil)
     }
 
+
     async getAllPerfiles(): Promise<Array<PerfilDto>>{
         const perfiles = await this.dao.getAllPerfils()
         return perfiles.map((perfiles: Perfil) => {

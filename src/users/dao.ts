@@ -79,7 +79,9 @@ export class UsersDao {
      * @returns {models.User}
      */
     async findByEmail(mail: string): Promise<User> {
+        console.log(' dao login fidByEmail - email, password: ', mail)
         const model = await UserModel.findOne({ "email": mail, enabled: "habilitado" }).populate('idPerfil').exec()
+        console.log('dao findByEmail: ', model)
         if (!model) throw new ModelNotFoundException()
         return this.mapToUser(model)
     }
