@@ -274,7 +274,8 @@ export async function generateReporteValoracionesPDF(chartImage, tituloReporte, 
         height: imageSize.height
     });
 
-    const pdfBytes = await pdfDoc.save();
 
+    const pdfBytes = await pdfDoc.save();
     return pdfBytes;
+
 }
