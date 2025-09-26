@@ -137,11 +137,8 @@ export class SoundRoomsServer {
     async getApp(): Promise<express.Application> {
         try {
             await this._startEngines(); // Conexión a DB/Redis
-
             this._app.set('trust proxy', true);
-            middleware.middleware(this._app);
 
-            // ... (Toda tu lógica de CORS) ...
             const allowedOrigins = [
                 'http://localhost:5173', 
                 // Agrega tu dominio de producción de Vercel aquí si es necesario
@@ -153,6 +150,10 @@ export class SoundRoomsServer {
                 methods: ['GET', 'POST', 'PUT', 'DELETE'],
                 allowedHeaders: ['Content-Type', 'Authorization']
             }));
+            
+            middleware.middleware(this._app);
+
+            // ... (Toda tu lógica de CORS) ...
             
             // ATENCIÓN: Las rutas estáticas con path locales (C:/...) NO funcionarán en Vercel.
             // Debes usar rutas relativas al proyecto. Por ahora las dejo, pero ten cuidado.
