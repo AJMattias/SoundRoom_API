@@ -127,6 +127,23 @@ export class SalaService{
         })
     }
 
+    //{ data: SalaDeEnsayo[]; total: number; page: number; totalPages: number }
+    async findSalaByOwnerPaginated(
+        idOwner: string, 
+        page: number = 1, 
+        limit: number = 10
+        ): Promise<{ data: SalaDeEnsayoDto[]; total: number; page: number; totalPages: number }> {
+
+        const result = await this.dao.getByOwnerPaginated(idOwner, page, limit);
+
+        return {
+            data: result.data.map((sala: SalaDeEnsayo) => this.mapToDto(sala)),
+            total: result.total,
+            page: result.page,
+            totalPages: result.totalPages
+        };
+    }
+
     //TODO update imagenes de sala de ensayo, solo agregar imagenes a sala de ensayo.
     async updateSalaDeEnsayoImagenes(id: string, dto: UpdateImageDto): Promise<SalaDeEnsayoDto>{
         const exists = await this.dao.findById2(id)
@@ -566,6 +583,18 @@ async  obtenerCantidadValoraciones(idRoom: string) {
         return opiniones.map((opinion: Opinion) => {
             return this.mapToDtoOpinion(opinion)
         })
+    }
+
+    async getMyAllOpiniones(idUser: string): Promise<Array<any>>{
+        const salas = await this.findSalaByOwner(idUser)
+        const opiniones = await Promise.all(salas.map(async (sala) => {
+            const opinionesSala = await this.dao.getOpinionByRoom(sala.id as unknown as string);
+            return {
+                sala: sala,
+                opiniones: opinionesSala.map((opinion: Opinion) => this.mapToDtoOpinion(opinion))
+            };
+        }));
+        return opiniones;
     }
 }
 

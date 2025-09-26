@@ -1,4 +1,4 @@
-import * as dotenv from "dotenv"
+//import * as dotenv from "dotenv"
 import * as express from "express"
 import * as jwt from "jsonwebtoken"
 import {AuthenticationException, AuthorizationException, ServerException} from "../common/exception/exception"
@@ -62,7 +62,7 @@ export const quota = (maxRequests: number) => {
 
 
 export const auth =  function (req : any , resp:  any, next : any) {
-        console.log("auth()")
+        
         var token = req.header("Authorization")
         if(!token) {
            console.error("Emtpy token") 
@@ -72,14 +72,13 @@ export const auth =  function (req : any , resp:  any, next : any) {
         token = token.replace("Bearer ","")
         const jwtKey =  process.env.JWT_KEY
         if(!jwtKey){
-            console.error("empty jwtKey")
             const err = new ServerException()
             return err.send(resp)
         }
         try {
             const decoded = jwt.verify(token,jwtKey)
             req.user = decoded
-            console.log('auth, req.user', req.user.id, req.user.email)
+            
             next()
         } catch(error){
              return (new AuthenticationException()).send(resp)
@@ -90,7 +89,7 @@ export const auth =  function (req : any , resp:  any, next : any) {
 export const admin = function(req: any, resp: any, next: any) {
     const user: UserDto = req.user
     if(user && user.isAdmin) {
-        //console.log('user.isAdmin: ', user.isAdmin)
+       
        next() 
     } else {
         return (new AuthorizationException()).send(resp)

@@ -1,7 +1,7 @@
 import * as service from "./service"
 import * as validator from "express-validator"
 import {run} from "../common/utils/run"
-import {Application, Request, Response} from "express"
+import {Application, Request, response, Response} from "express"
 import {admin, auth, checkPermission} from "../server/middleware"
 import {LoginResponseDto, LoginWithTokenDto, UserDto} from "./dto"
 import {StringUtils} from "../common/utils/string_utils"
@@ -479,7 +479,8 @@ export const route = (app: Application) => {
         validator.body("fechaI").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
         validator.body("fechaH").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),        
         run(async (req: any, resp: Response) => {
-            const errors = validator.validationResult(req)
+           try {
+             const errors = validator.validationResult(req)
             if(errors && !errors.isEmpty()){
                 throw ValidatorUtils.toArgumentsException(errors.array())
             }
@@ -502,33 +503,22 @@ export const route = (app: Application) => {
             //const chartImageBasic = await generateBarChart(mesesString, arrCantidades); // Generar el gráfico de barras
             const pdfBytes = await generateReportePDF(chartImage, 'Reporte - Artistas Nuevos', fechaInicio, fechaHasta); // Generar el PDF con el gráfico
 
+            if (!pdfBytes || pdfBytes.length === 0) {
+                throw new Error("El PDF no se generó o está vacío.");
+            }
             // crear nombre de archivo irrepetible
-            // const currentDate = new Date().toISOString().replace(/:/g, '-');
-            // const currentDatee = new Date()
-            // const currenDay = currentDatee.getDay()
-            // const currenMonth = currentDatee.getMonth()
-            // const currenYear = currentDatee.getFullYear()
-            // const currenHour = currentDatee.getTime()
+            const currentDate = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '_');
 
-            // const nombreArchivo = `report_${currentDate}.pdf`
-            // //const rutaPdf2 = `report_${currenDay}${currenMonth}${currenYear}${currenHour}.pdf`
-
-            // // Guardar el archivo PDF en el servidor
-            // //const ruta = `E:/Usuarios/matti/Escritorio/pdf_soundroom/pdfs/${rutaPdf2}`
-            // //await fs.writeFile(`E:/Usuarios/matti/Escritorio/pdf_soundroom/pdfs/${rutaPdf2}`, pdfBytes);
-
-            // // Enviar el archivo al cliente
-            // resp.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
-            // resp.setHeader('Content-Type', 'application/pdf');
-            // resp.write(pdfBytes)
-            // resp.end()
-
-            const nombreArchivo = `reporte_artistas_nuevos_${Date.now()}.pdf`;
+            const fileName = `reporte_reservas_${currentDate}.pdf`;
             resp.setHeader('Content-Type', 'application/pdf');
-            resp.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
-            console.log(Buffer.isBuffer(pdfBytes)); // true
-            resp.write(pdfBytes); // sin Buffer.from
-            resp.end();
+            resp.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+            resp.setHeader('Content-Length', pdfBytes.length);
+            resp.end(Buffer.from(pdfBytes));
+           
+           } catch (error) {
+            console.error('Error in PDF generation route:', error);
+            resp.status(500).send({ error: 'Failed to generate PDF' }); 
+           }
 
     }))
 
@@ -564,61 +554,45 @@ export const route = (app: Application) => {
         validator.body("fechaI").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
         validator.body("fechaH").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),        
         run(async (req: any, resp: Response) => {
-            const errors = validator.validationResult(req)
-            if(errors && !errors.isEmpty()){
-                throw ValidatorUtils.toArgumentsException(errors.array())
+            try {
+                const errors = validator.validationResult(req)
+                if(errors && !errors.isEmpty()){
+                    throw ValidatorUtils.toArgumentsException(errors.array())
+                }
+                const dto = req.body 
+                //fechaID = 'YYYY-MM-DD'
+                console.log("ruta reporte usuarios activos")
+                console.log(dto.fechaI)
+                console.log(dto.fechaH)
+                const fechaInicio =  dto.fechaI
+                const fechaHasta =  dto.fechaH
+                // const users : UserDto[] = await  service.instance.reporteUserByDateRange2(dto.fechaI, dto.fechaH)
+                let dtoNewUsersReport = [] 
+                //dias = await  service.instance.reporteUserByDateRange2(dto.fechaI, dto.fechaH)
+                //const NewUsersReport = await  service.instance.reporteUserByDateRange2(dto.fechaI, dto.fechaH)
+                const NewUsersReport = await  service.instance.obtenerUsuariosActivosPorMes(dto.fechaI, dto.fechaH)
+                
+                //Codigo Javascript :
+                const chartImage = await generateReporteBarChart(NewUsersReport.labels, NewUsersReport.datasets[0].data, 'Usuarios Activos'); // Generar el gráfico de barras
+                //const chartImageBasic = await generateBarChart(mesesString, arrCantidades); // Generar el gráfico de barras
+                const pdfBytes = await generateReportePDF(chartImage, 'Reporte - Usuarios Activos', fechaInicio, fechaHasta); // Generar el PDF con el gráfico
+
+                if (!pdfBytes || pdfBytes.length === 0) {
+                    throw new Error("El PDF no se generó o está vacío.");
+                }
+                // crear nombre de archivo irrepetible
+                const currentDate = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '_');
+
+                const fileName = `reporte_reservas_${currentDate}.pdf`;
+                resp.setHeader('Content-Type', 'application/pdf');
+                resp.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+                resp.setHeader('Content-Length', pdfBytes.length);
+                resp.end(Buffer.from(pdfBytes));
+           
+            } catch (error) {
+                console.error('Error in PDF generation route:', error);
+                resp.status(500).send({ error: 'Failed to generate PDF' }); 
             }
-            const dto = req.body 
-            //fechaID = 'YYYY-MM-DD'
-            console.log("ruta reporte usuarios activos")
-            console.log(dto.fechaI)
-            console.log(dto.fechaH)
-            const fechaInicio =  dto.fechaI
-            const fechaHasta =  dto.fechaH
-            // const users : UserDto[] = await  service.instance.reporteUserByDateRange2(dto.fechaI, dto.fechaH)
-            let dtoNewUsersReport = [] 
-            //dias = await  service.instance.reporteUserByDateRange2(dto.fechaI, dto.fechaH)
-            //const NewUsersReport = await  service.instance.reporteUserByDateRange2(dto.fechaI, dto.fechaH)
-            const NewUsersReport = await  service.instance.obtenerUsuariosActivosPorMes(dto.fechaI, dto.fechaH)
-            
-            //Codigo Javascript :
-            const chartImage = await generateReporteBarChart(NewUsersReport.labels, NewUsersReport.datasets[0].data, 'Usuarios Activos'); // Generar el gráfico de barras
-            //const chartImageBasic = await generateBarChart(mesesString, arrCantidades); // Generar el gráfico de barras
-            const pdfBytes = await generateReportePDF(chartImage, 'Reporte - Usuarios Activos', fechaInicio, fechaHasta); // Generar el PDF con el gráfico
-
-            // crear nombre de archivo irrepetible
-            // const currentDate = new Date().toISOString().replace(/:/g, '-');
-            // const currentDatee = new Date()
-            // const currenDay = currentDatee.getDay()
-            // const currenMonth = currentDatee.getMonth()
-            // const currenYear = currentDatee.getFullYear()
-            // const currenHour = currentDatee.getTime()
-
-            // const rutaPdf = `report_${currentDate}.pdf`
-            // const rutaPdf2 = `report_${currenDay}${currenMonth}${currenYear}${currenHour}.pdf`
-
-            // // Guardar el archivo PDF en el servidor
-            // const ruta = `E:/Usuarios/matti/Escritorio/pdf_soundroom/pdfs/${rutaPdf2}`
-            // await fs.writeFile(`E:/Usuarios/matti/Escritorio/pdf_soundroom/pdfs/${rutaPdf2}`, pdfBytes);
-
-            // // Enviar el archivo al cliente
-            // resp.setHeader('Content-Disposition', `attachment; filename="${rutaPdf2}"`);
-            // resp.setHeader('Content-Type', 'application/pdf');
-            // resp.download(
-            //     ruta, rutaPdf2, (err) => {
-            //         if (err) {
-            //             console.error('Error al enviar el archivo:', err);
-            //             resp.status(500).send('Error al descargar el archivo');
-            //         }
-            //     }
-            // )  
-
-            const nombreArchivo = `reporte_usuarios_activos_${Date.now()}.pdf`;
-        resp.setHeader('Content-Type', 'application/pdf');
-        resp.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
-        console.log(Buffer.isBuffer(pdfBytes)); // true
-        resp.write(pdfBytes); // sin Buffer.from
-        resp.end();
         
     }))
 
@@ -650,59 +624,46 @@ export const route = (app: Application) => {
         validator.body("fechaI").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
         validator.body("fechaH").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),        
         run(async (req: any, resp: Response) => {
-            const errors = validator.validationResult(req)
-            if(errors && !errors.isEmpty()){
-                throw ValidatorUtils.toArgumentsException(errors.array())
+            try {
+                const errors = validator.validationResult(req)
+                if(errors && !errors.isEmpty()){
+                    throw ValidatorUtils.toArgumentsException(errors.array())
+                }
+                const dto = req.body 
+                //fechaID = 'YYYY-MM-DD'
+                console.log("ruta reporte nuevos usuarios")
+                console.log(dto.fechaI)
+                console.log(dto.fechaH)
+                
+                
+                const NewUsersReport = await  service.instance.obtenerUsuariosBajaPorMes(dto.fechaI, dto.fechaH)
+                
+                const fechaInicio =  dto.fechaI
+                const fechaHasta =  dto.fechaH
+                //Codigo Javascript :
+                const chartImage = await generateReporteBarChart(NewUsersReport.labels, NewUsersReport.datasets[0].data, 'Usuarios Baja'); // Generar el gráfico de barras
+                //const chartImageBasic = await generateBarChart(mesesString, arrCantidades); // Generar el gráfico de barras
+                const pdfBytes = await generateReportePDF(chartImage, 'Reporte - Usuarios baja', fechaInicio, fechaHasta); // Generar el PDF con el gráfico
+
+                 if (!pdfBytes || pdfBytes.length === 0) {
+                throw new Error("El PDF no se generó o está vacío.");
+                }
+                // crear nombre de archivo irrepetible
+                const currentDate = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '_');
+
+                
+                // Enviar el archivo al cliente
+                const fileName = `reporte_reservas_${currentDate}.pdf`;
+                resp.setHeader('Content-Type', 'application/pdf');
+                resp.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+                resp.setHeader('Content-Length', pdfBytes.length);
+                resp.end(Buffer.from(pdfBytes));
+           
+        
+            } catch (error) {
+                console.error('Error in PDF generation route:', error);
+                resp.status(500).send({ error: 'Failed to generate PDF' });  
             }
-            const dto = req.body 
-            //fechaID = 'YYYY-MM-DD'
-            console.log("ruta reporte nuevos usuarios")
-            console.log(dto.fechaI)
-            console.log(dto.fechaH)
-            
-            
-            const NewUsersReport = await  service.instance.obtenerUsuariosBajaPorMes(dto.fechaI, dto.fechaH)
-            
-            const fechaInicio =  dto.fechaI
-            const fechaHasta =  dto.fechaH
-            //Codigo Javascript :
-            const chartImage = await generateReporteBarChart(NewUsersReport.labels, NewUsersReport.datasets[0].data, 'Usuarios Baja'); // Generar el gráfico de barras
-            //const chartImageBasic = await generateBarChart(mesesString, arrCantidades); // Generar el gráfico de barras
-            const pdfBytes = await generateReportePDF(chartImage, 'Reporte - Usuarios baja', fechaInicio, fechaHasta); // Generar el PDF con el gráfico
-
-            // crear nombre de archivo irrepetible
-            // const currentDate = new Date().toISOString().replace(/:/g, '-');
-            // const currentDatee = new Date()
-            // const currenDay = currentDatee.getDay()
-            // const currenMonth = currentDatee.getMonth()
-            // const currenYear = currentDatee.getFullYear()
-            // const currenHour = currentDatee.getTime()
-
-            // const rutaPdf = `report_${currentDate}.pdf`
-            // const rutaPdf2 = `report_${currenDay}${currenMonth}${currenYear}${currenHour}.pdf`
-
-            // // Guardar el archivo PDF en el servidor
-            // const ruta = `E:/Usuarios/matti/Escritorio/pdf_soundroom/pdfs/${rutaPdf2}`
-            // await fs.writeFile(`E:/Usuarios/matti/Escritorio/pdf_soundroom/pdfs/${rutaPdf2}`, pdfBytes);
-
-            // // Enviar el archivo al cliente
-            // resp.setHeader('Content-Disposition', `attachment; filename="${rutaPdf2}"`);
-            // resp.setHeader('Content-Type', 'application/pdf');
-            // resp.download(
-            //     ruta, rutaPdf2, (err) => {
-            //         if (err) {
-            //             console.error('Error al enviar el archivo:', err);
-            //             resp.status(500).send('Error al descargar el archivo');
-            //         }
-            //     }
-            // )
-            
-            const nombreArchivo = `reporte_usuarios_baja_${Date.now()}.pdf`;
-            resp.setHeader('Content-Type', 'application/pdf');
-            resp.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
-            console.log(Buffer.isBuffer(pdfBytes)); // true
-            resp.write(pdfBytes); // sin Buffer.from
-            resp.end();
     }))
 
     //Reporte: contar cantidad de usuarios que alquilan sala de ensayo
@@ -735,65 +696,53 @@ export const route = (app: Application) => {
         validator.body("fechaI").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
         validator.body("fechaH").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),        
         run(async (req: any, resp: Response) => {
-            const errors = validator.validationResult(req)
-            if(errors && !errors.isEmpty()){
-                throw ValidatorUtils.toArgumentsException(errors.array())
-            }
-            const dto = req.body 
-            //fechaID = 'YYYY-MM-DD'
-            console.log("ruta reporte propietarios que alquilan")
-            console.log(dto.fechaI)
-            console.log(dto.fechaH)
-            
-            const NewUsersReport = await  service.instance.propietariosAlquilanSala3(dto.fechaI, dto.fechaH)
-            console.log('ruta descargar reporte prop alquilan, result: ', NewUsersReport)
+            try {
+                const errors = validator.validationResult(req)
+                if(errors && !errors.isEmpty()){
+                    throw ValidatorUtils.toArgumentsException(errors.array())
+                }
+                const dto = req.body 
+                //fechaID = 'YYYY-MM-DD'
+                console.log("ruta reporte propietarios que alquilan")
+                console.log(dto.fechaI)
+                console.log(dto.fechaH)
+                
+                const NewUsersReport = await  service.instance.propietariosAlquilanSala3(dto.fechaI, dto.fechaH)
+                console.log('ruta descargar reporte prop alquilan, result: ', NewUsersReport)
 
-            if ('msg' in NewUsersReport) {
-                // Manejar el caso en que no se encontraron usuarios
-                console.log('ruta descargar reporte prop alquilan, mensaje:', NewUsersReport.msg);
-                resp.status(404).json({ error: NewUsersReport.msg });
-                return;
-            }
+                if ('msg' in NewUsersReport) {
+                    // Manejar el caso en que no se encontraron usuarios
+                    console.log('ruta descargar reporte prop alquilan, mensaje:', NewUsersReport.msg);
+                    resp.status(404).json({ error: NewUsersReport.msg });
+                    return;
+                }
 
-            const fechaInicio =  dto.fechaI
-            const fechaHasta =  dto.fechaH
-            //Codigo Javascript :
-            const chartImage = await generateReporteBarChart(NewUsersReport.labels, NewUsersReport.datasets[0].data, 'Usuarios Propietarios que alquilan sala'); // Generar el gráfico de barras
-            //const chartImageBasic = await generateBarChart(mesesString, arrCantidades); // Generar el gráfico de barras
-            const pdfBytes = await generateReportePDF(chartImage, 'Reporte - Usuarios Propietarios que alquilan sala', fechaInicio, fechaHasta); // Generar el PDF con el gráfico
+                const fechaInicio =  dto.fechaI
+                const fechaHasta =  dto.fechaH
+                //Codigo Javascript :
+                const chartImage = await generateReporteBarChart(NewUsersReport.labels, NewUsersReport.datasets[0].data, 'Usuarios Propietarios que alquilan sala'); // Generar el gráfico de barras
+                //const chartImageBasic = await generateBarChart(mesesString, arrCantidades); // Generar el gráfico de barras
+                const pdfBytes = await generateReportePDF(chartImage, 'Reporte - Usuarios Propietarios que alquilan sala', fechaInicio, fechaHasta); // Generar el PDF con el gráfico
 
-            // crear nombre de archivo irrepetible
-            // const currentDate = new Date().toISOString().replace(/:/g, '-');
-            // const currentDatee = new Date()
-            // const currenDay = currentDatee.getDay()
-            // const currenMonth = currentDatee.getMonth()
-            // const currenYear = currentDatee.getFullYear()
-            // const currenHour = currentDatee.getTime()
+                if (!pdfBytes || pdfBytes.length === 0) {
+                    throw new Error("El PDF no se generó o está vacío.");
+                }
+                // crear nombre de archivo irrepetible
+                const currentDate = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '_');
 
-            // const rutaPdf = `report_${currentDate}.pdf`
-            // const rutaPdf2 = `report_${currenDay}${currenMonth}${currenYear}${currenHour}.pdf`
-
-            // // Guardar el archivo PDF en el servidor
-            // const ruta = `E:/Usuarios/matti/Escritorio/pdf_soundroom/pdfs/${rutaPdf2}`
-            // await fs.writeFile(`E:/Usuarios/matti/Escritorio/pdf_soundroom/pdfs/${rutaPdf2}`, pdfBytes);
-
-            // // Enviar el archivo al cliente
-            // resp.setHeader('Content-Disposition', `attachment; filename="${rutaPdf2}"`);
-            // resp.setHeader('Content-Type', 'application/pdf');
-            // resp.download(
-            //     ruta, rutaPdf2, (err) => {
-            //         if (err) {
-            //             console.error('Error al enviar el archivo:', err);
-            //             resp.status(500).send('Error al descargar el archivo');
-            //         }
-            //     }
-            // ) 
-            const nombreArchivo = `reporte_propietarios_alquilan_${Date.now()}.pdf`;
-            resp.setHeader('Content-Type', 'application/pdf');
-            resp.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
-            console.log(Buffer.isBuffer(pdfBytes)); // true
-            resp.write(pdfBytes); // sin Buffer.from
-            resp.end();   
+                
+                // Enviar el archivo al cliente
+                const fileName = `reporte_reservas_${currentDate}.pdf`;
+                resp.setHeader('Content-Type', 'application/pdf');
+                resp.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+                resp.setHeader('Content-Length', pdfBytes.length);
+                resp.end(Buffer.from(pdfBytes));
+           
+            } catch (error) {
+                 console.error('Error in PDF generation route:', error);
+                 resp.status(500).send({ error: 'Failed to generate PDF' }); 
+                          
+            }   
         
     }))
 
@@ -806,78 +755,59 @@ export const route = (app: Application) => {
         validator.body("fechaI").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
         validator.body("fechaH").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),        
         run(async (req: any, resp: Response) => {
-            const errors = validator.validationResult(req)
-            if(errors && !errors.isEmpty()){
-                throw ValidatorUtils.toArgumentsException(errors.array())
+            try {
+                const errors = validator.validationResult(req)
+                if(errors && !errors.isEmpty()){
+                    throw ValidatorUtils.toArgumentsException(errors.array())
+                }
+                const dto = req.body 
+                //fechaID = 'YYYY-MM-DD'
+                console.log("ruta reporte nuevos usuarios")
+                console.log(dto.fechaI)
+                console.log(dto.fechaH)
+                
+                const NewUsersReport = await  service.instance.propietariosAlquilanSala(dto.fechaI, dto.fechaH)
+                console.log('ruta:', NewUsersReport)
+
+                //armar dos array uno con mes y otro con cantidad
+                let arrMeses : string[]= []
+                let arrCantidades : number[] = []
+                NewUsersReport.forEach(item => {
+                    // meses esta designado con el nro de mes q le corresponde
+                    arrMeses.push(item.mes);
+                    arrCantidades.push(item.cantidad);
+                });
+                console.log('NewUsersReport:', NewUsersReport)
+
+                
+                //convierto array de numeros a array de string, que contiene los meses
+                const mesesString = convertirMeses(arrMeses)
+                
+                
+                //Codigo Javascript :
+                const chartImage = await generateBarChartExample(mesesString, arrCantidades); // Generar el gráfico de barras
+                //const chartImageBasic = await generateBarChart(mesesString, arrCantidades); // Generar el gráfico de barras
+                const pdfBytes = await generatePDF(chartImage); // Generar el PDF con el gráfico
+                
+                if (!pdfBytes || pdfBytes.length === 0) {
+                    throw new Error("El PDF no se generó o está vacío.");
+                }
+                // crear nombre de archivo irrepetible
+                const currentDate = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '_');
+
+                
+                // Enviar el archivo al cliente
+                const fileName = `reporte_reservas_${currentDate}.pdf`;
+                resp.setHeader('Content-Type', 'application/pdf');
+                resp.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+                resp.setHeader('Content-Length', pdfBytes.length);
+                resp.end(Buffer.from(pdfBytes));
+            } catch (error) {
+                console.error('Error in PDF generation route:', error);
+                resp.status(500).send({ error: 'Failed to generate PDF' }); 
             }
-            const dto = req.body 
-            //fechaID = 'YYYY-MM-DD'
-            console.log("ruta reporte nuevos usuarios")
-            console.log(dto.fechaI)
-            console.log(dto.fechaH)
+           
             
-            const NewUsersReport = await  service.instance.propietariosAlquilanSala(dto.fechaI, dto.fechaH)
-            console.log('ruta:', NewUsersReport)
-
-            //armar dos array uno con mes y otro con cantidad
-            let arrMeses : string[]= []
-            let arrCantidades : number[] = []
-            NewUsersReport.forEach(item => {
-                // meses esta designado con el nro de mes q le corresponde
-                arrMeses.push(item.mes);
-                arrCantidades.push(item.cantidad);
-            });
-            console.log('NewUsersReport:', NewUsersReport)
-
-            //newUserReports  es un arreglo de objects 
-            //resultados: { año: number, mes: number, cantidad: number }
-            
-            //convierto array de numeros a array de string, que contiene los meses
-            const mesesString = convertirMeses(arrMeses)
-            //codigo typescript
-            // //crear chart
-            // const { barChart, pieChart } = await createCharts(mesesString, arrCantidades);
-            
-            // // Generar el PDF
-            // const pdfBytes = await generatePDF(mesesString, arrCantidades);
-
-            // // Guardar el PDF en un archivo
-            // const fileName = 'graficos.pdf';
-            // await fs.promises.writeFile(fileName, pdfBytes);
-
-            // // Devolver la URL de descarga
-            // const downloadUrl = `${req.protocol}://${req.get('host')}/${fileName}`;
-
-            // resp.json({NewUsersReport, downloadUrl})    
-            
-            
-            //Codigo Javascript :
-            const chartImage = await generateBarChartExample(mesesString, arrCantidades); // Generar el gráfico de barras
-            //const chartImageBasic = await generateBarChart(mesesString, arrCantidades); // Generar el gráfico de barras
-            const pdfBytes = await generatePDF(chartImage); // Generar el PDF con el gráfico
-    
-            const pdfPath = '/generated.pdf'; // Ruta donde se guardará el archivo PDF
-            // //await fs.writeFile(pdfPath, pdfBytes); // Guardar el PDF en el servidor
-            
-            // // const imageUrl2 = `/public/${pdfPath}`
-            // // const fileUrl = `${req.protocol}://${req.get('host')}/generated.pdf`; // Obtener la URL del archivo PDF
-            // const directorioPDF = path.join(__dirname, './generated.pdf');
-            // console.log(directorioPDF)
-            
-            // // crear nombre de archivo irrepetible
-            // const currentDate = new Date().toISOString().replace(/:/g, '-');
-            // const rutaPdf = `report_${currentDate}.pdf`
-            
-            // await fs.writeFile( `E:/Usuarios/matti/Escritorio/pdf_soundroom/${rutaPdf}`, pdfBytes); // Guardar el PDF en el servidor
-            
-            // resp.json({NewUsersReport, directorioPDF}) 
-
-            const nombreArchivo = `reporte_propietarios_alquilan_${Date.now()}.pdf`;
-            resp.setHeader('Content-Type', 'application/pdf');
-            resp.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
-            console.log(Buffer.isBuffer(pdfBytes)); // true
-            resp.write(pdfBytes); // sin Buffer.from
-            resp.end();
     }))
 
     //TODO Promedio estrellas de artista
@@ -886,35 +816,6 @@ export const route = (app: Application) => {
         //idArtista
         const id = req.query.id as string
         const idArtist = mongoose.Types.ObjectId(id)
-         // Encontrar opiniones por idArtist
-        //  const opiniones: OpinionDto[] = await OpinionModel.find({idArtist: idArtist });
-        //  // Calcular el promedio de estrellas
-        //  console.log('opiniones al artista: ', opiniones)
-        //  if (opiniones.length = 0) {
-        //      return res.json( 0 );
-        //  }
- 
-        //  const totalEstrellas = opiniones.reduce((total, opinion) => total + opinion.estrellas, 0);
-        //  const promedio = totalEstrellas / opiniones.length;
-
-        //retorna solo el numero, ej: 3.5
-       // res.json(promedio)
-
-        // try {
-        //     const result = await OpinionModel.aggregate([
-        //         { $match: { idArtist: new mongoose.Types.ObjectId(id) } },
-        //         { $group: { _id: null, averageRating: { $avg: "$estrellas" } } }
-        //     ]);
-    
-        //     if (result.length > 0) {
-        //         res.json(result[0].averageRating)
-        //     } else {
-        //         res.json(0) // Si no hay opiniones para ese artista
-        //     }
-        // } catch (error) {
-        //     console.error("Error calculando el promedio de estrellas:", error);
-        //     throw error;
-        // }
 
         //forma 3;
          // Buscar todas las opiniones para el artista
@@ -934,86 +835,6 @@ export const route = (app: Application) => {
  
 
     }) )
-
-    //Descarga de Reporte como Pdf:
-    // app.post("/users/descargarReportesNuevosUsers", 
-    //     auth,
-    //     admin,
-    //     validator.body("fechaI").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
-    //     validator.body("fechaH").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),        
-    //     run(async (req: any, resp: Response) => {
-    //         const errors = validator.validationResult(req)
-    //         if(errors && !errors.isEmpty()){
-    //             throw ValidatorUtils.toArgumentsException(errors.array())
-    //         }
-    //         const dto = req.body 
-    //         //fechaID = 'YYYY-MM-DD'
-    //         console.log("ruta reporte nuevos usuarios")
-    //         console.log(dto.fechaI)
-    //         console.log(dto.fechaH)
-    //         const fechaInicio =  dto.fechaI
-    //         const fechaHasta =  dto.fechaH
-    //         // const users : UserDto[] = await  service.instance.reporteUserByDateRange2(dto.fechaI, dto.fechaH)
-    //         let dtoNewUsersReport = [] 
-    //         //dias = await  service.instance.reporteUserByDateRange2(dto.fechaI, dto.fechaH)
-    //         //const NewUsersReport = await  service.instance.reporteUserByDateRange2(dto.fechaI, dto.fechaH)
-    //         //const NewUsersReport = await  service.instance.obtenerCantidadDocumentosPorMes(dto.fechaI, dto.fechaH)
-    //         const NewUsersReport2 = await  service.instance.reporteNuevosUsuarios(dto.fechaI, dto.fechaH)
-            
-    //         //Codigo Javascript :
-    //         const chartImage = await generateReporteBarChart(NewUsersReport2.labels, NewUsersReport2.datasets[0].data, 'Usuarios Nuevos'); // Generar el gráfico de barras
-    //         //const chartImageBasic = await generateBarChart(mesesString, arrCantidades); // Generar el gráfico de barras
-    //         const pdfBytes = await generateReportePDF(chartImage, 'Reporte - Usuarios Nuevos', fechaInicio, fechaHasta); // Generar el PDF con el gráfico
-    
-    //         const pdfPath = '/generated.pdf'; // Ruta donde se guardará el archivo PDF
-    //         //await fs.writeFile(pdfPath, pdfBytes); // Guardar el PDF en el servidor
-            
-    //         // const imageUrl2 = `/public/${pdfPath}`
-    //         // const fileUrl = `${req.protocol}://${req.get('host')}/generated.pdf`; // Obtener la URL del archivo PDF
-    //         //days
-    //         //directorio od se usa mas abajo
-    //         //const directorioPDF = path.join(__dirname, './generated.pdf');
-    //         //console.log(directorioPDF)
-            
-    //         // crear nombre de archivo irrepetible
-    //         const currentDate = new Date().toISOString().replace(/:/g, '-');
-    //         const currentDatee = new Date()
-    //         const currenDay = currentDatee.getDay()
-    //         const currenMonth = currentDatee.getMonth()
-    //         const currenYear = currentDatee.getFullYear()
-    //         const currenHour = currentDatee.getTime()
-
-    //         const rutaPdf = `report_${currentDate}.pdf`
-    //         const rutaPdf2 = `report_${currenDay}${currenMonth}${currenYear}${currenHour}${currenHour}.pdf`
-            
-    //         // await fs.writeFile( `E:/Usuarios/matti/Escritorio/pdf_soundroom/${rutaPdf2}`, pdfBytes); // Guardar el PDF en el servidor
-            
-    //         // resp.json({NewUsersReport2, directorioPDF}) 
-
-    //         //nueva version para descargar pdf creado
-    //         // Definir el directorio donde se guardará el archivo
-    //         const directorioPDF = path.join(__dirname, 'public', 'pdfs', rutaPdf);
-
-    //         // Guardar el archivo PDF en el servidor
-    //         const ruta = `E:/Usuarios/matti/Escritorio/pdf_soundroom/pdfs/${rutaPdf2}`
-    //         await fs.writeFile(`E:/Usuarios/matti/Escritorio/pdf_soundroom/pdfs/${rutaPdf2}`, pdfBytes);
-
-    //         // Enviar el archivo al cliente
-    //         resp.setHeader('Content-Disposition', `attachment; filename="${rutaPdf2}"`);
-    //         resp.setHeader('Content-Type', 'application/pdf');
-    //         resp.download(
-    //             ruta
-    //             //rutaPdf2
-    //             //ruta, rutaPdf2
-    //             , (err) => {
-    //             if (err) {
-    //                 console.error('Error al enviar el archivo:', err);
-    //                 resp.status(500).send('Error al descargar el archivo');
-    //             }
-            
-    //         })
-
-    //     }))
 
     app.post("/users/descargarReportesNuevosUsers", 
         auth,
@@ -1035,12 +856,12 @@ export const route = (app: Application) => {
             const pdfBytes = await generateReportePDF(chartImage, 'Reporte - Usuarios Nuevos', fechaInicio, fechaHasta);
     
             // Configurar headers para descarga
-        const nombreArchivo = `reporte_usuarios_nuevos_${Date.now()}.pdf`;
-        resp.setHeader('Content-Type', 'application/pdf');
-        resp.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
-        console.log(Buffer.isBuffer(pdfBytes)); // true
-        resp.write(pdfBytes); // sin Buffer.from
-        resp.end();
+            const nombreArchivo = `reporte_usuarios_nuevos_${Date.now()}.pdf`;
+            resp.setHeader('Content-Type', 'application/pdf');
+            resp.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
+            console.log(Buffer.isBuffer(pdfBytes)); // true
+            resp.write(pdfBytes); // sin Buffer.from
+            resp.end();
         })
     );
         

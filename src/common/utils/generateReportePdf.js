@@ -56,9 +56,9 @@ export async function generateReporteBarChartExample(labels, data) {
 
 //chart image with data parameters
 export async function generateReporteBarChart(labels, datas, label) {
-    console.log('generate reporte: ')
-    console.log('labels: ', labels)
-    console.log('datas: ', datas)
+    // console.log('generate reporte: ')
+    // console.log('labels: ', labels)
+    // console.log('datas: ', datas)
     const width = 600;
     const height = 400;
 
@@ -209,9 +209,7 @@ export async function generateReportePDF(chartImage, tituloReporte, fechaInicio,
     });
 
     const pdfBytes = await pdfDoc.save();
-    await fs.writeFile('test_debug.pdf', pdfBytes);
-    return Buffer.from(pdfBytes); 
-    //return pdfBytes;
+    return pdfBytes; 
 }
 
 // Función para generar el PDF con el gráfico de barras y texto relacionado
@@ -221,7 +219,7 @@ export async function generateReporteValoracionesPDF(chartImage, tituloReporte, 
 
 
     const hoy = new Date()
-    const fechaAtcual = `${hoy.getFullYear()}-${hoy.getMonth()+1}-${hoy.getday}`
+    const fechaAtcual = `${hoy.getFullYear()}-${hoy.getMonth()+1}-${hoy.getDate()}`
     
     page.drawText(`${tituloReporte}`, {
         x: 50,
@@ -274,7 +272,8 @@ export async function generateReporteValoracionesPDF(chartImage, tituloReporte, 
         height: imageSize.height
     });
 
-    const pdfBytes = await pdfDoc.save();
 
+    const pdfBytes = await pdfDoc.save();
     return pdfBytes;
+
 }

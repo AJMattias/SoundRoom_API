@@ -98,6 +98,37 @@ export const route = (app: Application) => {
             resp.json(salas)    
     }))
 
+    app.get('owner/:idOwner',
+      auth,
+      run(async (req: any, resp: Response) => {
+      try {
+      const idOwner = req.user.id as string;
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+
+      const salas = await service.instance.findSalaByOwnerPaginated(idOwner, page, limit);
+
+      // 200 OK
+      resp.status(200).json({
+        status: 'success',
+        data: salas.data,
+        page: salas.page,
+        total: salas.total,
+        totalPages: salas.totalPages
+      });
+
+    } catch (error) {
+      console.error('Error getting salas paginadas:', error);
+
+      // 500 Internal Server Error
+      resp.status(500).json({
+        status: 'error',
+        message: 'Error al obtener las salas del propietario',
+        error: error instanceof Error ? error.message : error
+      });
+    }
+}));
+    
 
     //no se usa creo
     app.get("/salasdeensayo/search/",
@@ -829,14 +860,15 @@ export const route = (app: Application) => {
         auth,
         checkArtistOrSalaDeEnsayo,
         run(async (req: Request, res: Response)=>{
-        const id = req.query.id as string
+          console.log('get opiniones a sala: ', req.query.id)
+          const id = req.query.id as string
         //buscar sala de ensayo
         const salaDeEnsayo = await service.instance.findSalaById(id);
         if (!salaDeEnsayo) {
             return res.status(404).json({ message: 'Sala de ensayo no encontrada' });
         }
         const opinionesIds = salaDeEnsayo.opiniones;
-        const opiniones = await OpinionModel.find({ _id: { $in: opinionesIds } }).populate("idUser");
+        const opiniones = await OpinionModel.find({ _id: { $in: opinionesIds } }).populate("idUser").populate("idRoom");
 
         res.json({ opiniones });
 
@@ -924,221 +956,124 @@ export const route = (app: Application) => {
         population: number;
     }
     
-    // interface GrafTortaTipoSala {
-    //     name: string;
-    //     population: number;
-    // }
-    // app.post("/salasDeEnsayo/reporteTipoSalaTorta",
-    //     auth,
-    //     admin,
-    //     validator.body("fechaI").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
-    //     validator.body("fechaH").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
-    //     run(async (req: Request, resp: Response) => {
-    //       const errors = validator.validationResult(req);
-    //       if (errors && !errors.isEmpty()) {
-    //         throw ValidatorUtils.toArgumentsException(errors.array());
-    //       }
-      
-    //       const dto = req.body;
-    //       console.log("ruta reporte tipo sala de ensayo");
-    //       console.log(dto.fechaI);
-    //       console.log(dto.fechaH);
-      
-    //       const fechaInicioObj = new Date(dto.fechaI);
-    //       const fechaFinObj = new Date(dto.fechaH);
-      
-    //       async function obtenerGrafTortaTipoSala(fechaInicio: Date, fechaFin: Date): Promise<GrafTortaTipoSala[]> {
-    //         try {
-    //           const resultados = await SalaDeEnsayoModel.aggregate([
-    //             {
-    //               $match: {
-    //                 createdAt: { $gte: fechaInicio, $lte: fechaFin },
-    //                 deletedAt: { $exists: false }
-    //               }
-    //             },
-    //             {
-    //               $group: {
-    //                 _id: "$idType",
-    //                 count: { $sum: 1 }
-    //               }
-    //             },
-    //             {
-    //               $lookup: {
-    //                 from: "types", // Nombre de la colección de tipos en MongoDB
-    //                 localField: "_id",
-    //                 foreignField: "_id",
-    //                 as: "typeInfo"
-    //               }
-    //             },
-    //             {
-    //               $unwind: "$typeInfo"
-    //             },
-    //             {
-    //               $project: {
-    //                 _id: 0,
-    //                 name: "$typeInfo.name",
-    //                 population: "$count"
-    //               }
-    //             }
-    //           ]);
-      
-    //           return resultados as GrafTortaTipoSala[];
-    //         } catch (error) {
-    //           console.error("Error al obtener el gráfico de torta por tipo de sala:", error);
-    //           throw error;
-    //         }
-    //       }
-      
-    //       try {
-    //         const resultados = await obtenerGrafTortaTipoSala(fechaInicioObj, fechaFinObj);
-    //         console.log('resultados tipo Torta: ', resultados)
-
-    //         //const resultados = await obtenerGrafTortaTipoSala(fechaInicioObj, fechaFinObj);
-            
-    //         // Calcular el total de la población para calcular los porcentajes
-    //         const totalPopulation = resultados.reduce((acc, result) => acc + result.population, 0);
-
-
-    //         // Formatear los resultados para Chart.js
-    //         const labels: string[] = resultados.map(result => {
-    //             const percentage = ((result.population / totalPopulation) * 100).toFixed(2); // Calcular porcentaje
-    //             return `${result.name} (${percentage}%)`; // Incluir porcentaje en el label
-    //         });
-    //         const data: number[] = resultados.map(result => result.population);
-
-    //         const formattedResult = {
-    //         labels: labels,
-    //         datasets: [
-    //             {
-    //             data: data
-    //             }
-    //         ]
-    //         };
-    //         return resp.status(200).json(formattedResult);
-    //       } catch (error) {
-    //         return resp.status(500).json({ error: "Error al generar el reporte" });
-    //       }
-    //     })
-    // );
-
     interface GrafTortaTipoSala {
         name: string;
         population: number;
       }
       
-      app.post(
-        "/salasDeEnsayo/reporteTipoSalaTorta",
-        auth,
-        admin,
-        validator.body("fechaI").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
-        validator.body("fechaH").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
-        run(async (req: Request, resp: Response) => {
-          const errors = validator.validationResult(req);
-          if (errors && !errors.isEmpty()) {
-            throw ValidatorUtils.toArgumentsException(errors.array());
-          }
+    app.post(
+      "/salasDeEnsayo/reporteTipoSalaTorta",
+      auth,
+      admin,
+      validator.body("fechaI").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
+      validator.body("fechaH").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
+      run(async (req: Request, resp: Response) => {
+        const errors = validator.validationResult(req);
+        if (errors && !errors.isEmpty()) {
+          throw ValidatorUtils.toArgumentsException(errors.array());
+        }
 
-          const dto = req.body;
-          console.log("ruta reporte tipo sala de ensayo");
-          console.log(dto.fechaI);
-          console.log(dto.fechaH);
-      
-          const fechaInicioObj = new Date(dto.fechaI);
-          const fechaFinObj = new Date(dto.fechaH);
-      
-          async function obtenerGrafTortaTipoSala(
-            fechaInicio: Date,
-            fechaFin: Date
-          ): Promise<GrafTortaTipoSala[]> {
-            try {
-              const resultados = await SalaDeEnsayoModel.aggregate([
-                {
-                  $match: {
-                    createdAt: { $gte: fechaInicio, $lte: fechaFin },
-                    deletedAt: { $exists: false },
-                  },
-                },
-                {
-                  $group: {
-                    _id: "$idType",
-                    count: { $sum: 1 },
-                  },
-                },
-                {
-                  $lookup: {
-                    from: "types", // Nombre de la colección de tipos en MongoDB
-                    localField: "_id",
-                    foreignField: "_id",
-                    as: "typeInfo",
-                  },
-                },
-                {
-                  $unwind: "$typeInfo",
-                },
-                {
-                  $project: {
-                    _id: 0,
-                    name: "$typeInfo.name",
-                    population: "$count",
-                  },
-                },
-              ]);
-      
-              return resultados as GrafTortaTipoSala[];
-            } catch (error) {
-              console.error("Error al obtener el gráfico de torta por tipo de sala:", error);
-              throw error;
-            }
-          }
-      
+        const dto = req.body;
+        console.log("ruta reporte tipo sala de ensayo");
+        console.log(dto.fechaI);
+        console.log(dto.fechaH);
+    
+        const fechaInicioObj = new Date(dto.fechaI);
+        const fechaFinObj = new Date(dto.fechaH);
+    
+        async function obtenerGrafTortaTipoSala(
+          fechaInicio: Date,
+          fechaFin: Date
+        ): Promise<GrafTortaTipoSala[]> {
           try {
-            const resultados = await obtenerGrafTortaTipoSala(fechaInicioObj, fechaFinObj);
-            console.log("resultados tipo Torta: ", resultados);
-      
-            let formattedResult;
-      
-            if (resultados.length === 0) {
-              // Caso sin datos
-              formattedResult = {
-                labels: ["Sin resultados"],
-                datasets: [
-                  {
-                    data: [1],
-                    backgroundColor: ["#878686"], // Color gris claro o neutro
-                  },
-                ],
-              };
-            } else {
-              const totalPopulation = resultados.reduce((acc, result) => acc + result.population, 0);
-      
-              const labels: string[] = resultados.map((result) => {
-                const percentage = ((result.population / totalPopulation) * 100).toFixed(2);
-                return `${result.name} (${percentage}%)`;
-              });
-      
-              const data: number[] = resultados.map((result) => result.population);
-      
-              formattedResult = {
-                labels: labels,
-                datasets: [
-                  {
-                    data: data,
-                    backgroundColor: [
-                      "#FFCE56",
-                     // "#FF9F40",
-                    ],
-                  },
-                ],
-              };
-            }
-      
-            return resp.status(200).json(formattedResult);
+            const resultados = await SalaDeEnsayoModel.aggregate([
+              {
+                $match: {
+                  createdAt: { $gte: fechaInicio, $lte: fechaFin },
+                  deletedAt: { $exists: false },
+                },
+              },
+              {
+                $group: {
+                  _id: "$idType",
+                  count: { $sum: 1 },
+                },
+              },
+              {
+                $lookup: {
+                  from: "types", // Nombre de la colección de tipos en MongoDB
+                  localField: "_id",
+                  foreignField: "_id",
+                  as: "typeInfo",
+                },
+              },
+              {
+                $unwind: "$typeInfo",
+              },
+              {
+                $project: {
+                  _id: 0,
+                  name: "$typeInfo.name",
+                  population: "$count",
+                },
+              },
+            ]);
+    
+            return resultados as GrafTortaTipoSala[];
           } catch (error) {
-            return resp.status(500).json({ error: "Error al generar el reporte" });
+            console.error("Error al obtener el gráfico de torta por tipo de sala:", error);
+            throw error;
           }
-        })
-      );
-      
+        }
+    
+        try {
+          const resultados = await obtenerGrafTortaTipoSala(fechaInicioObj, fechaFinObj);
+          console.log("resultados tipo Torta: ", resultados);
+    
+          let formattedResult;
+    
+          if (resultados.length === 0) {
+            // Caso sin datos
+            formattedResult = {
+              labels: ["Sin resultados"],
+              datasets: [
+                {
+                  data: [1],
+                  backgroundColor: ["#878686"], // Color gris claro o neutro
+                },
+              ],
+            };
+          } else {
+            const totalPopulation = resultados.reduce((acc, result) => acc + result.population, 0);
+    
+            const labels: string[] = resultados.map((result) => {
+              const percentage = ((result.population / totalPopulation) * 100).toFixed(2);
+              return `${result.name} (${percentage}%)`;
+            });
+    
+            const data: number[] = resultados.map((result) => result.population);
+    
+            formattedResult = {
+              labels: labels,
+              datasets: [
+                {
+                  data: data,
+                  backgroundColor: [
+                    "#FFCE56",
+                    // "#FF9F40",
+                  ],
+                },
+              ],
+            };
+          }
+    
+          return resp.status(200).json(formattedResult);
+        } catch (error) {
+          return resp.status(500).json({ error: "Error al generar el reporte" });
+        }
+      })
+    );
+    
 
     //reporte tipos de sala grafico torta:
     app.post("/salasDeEnsayo/descargarReporteTipoSalaTorta",
@@ -1201,32 +1136,13 @@ export const route = (app: Application) => {
               return resultados as GrafTortaTipoSala[];
             } catch (error) {
               console.error("Error al obtener el gráfico de torta por tipo de sala:", error);
-              throw error;
+              console.error('Error in PDF generation route:', error);
+              resp.status(500).send({ error: 'Failed to generate PDF' });
+              return []
             }
           }
       
           try {
-            // const resultados = await obtenerGrafTortaTipoSala(fechaInicioObj, fechaFinObj);
-            
-            // // Calcular el total de la población para calcular los porcentajes
-            // const totalPopulation = resultados.reduce((acc, result) => acc + result.population, 0);
-
-
-            // // Formatear los resultados para Chart.js
-            // const labels: string[] = resultados.map(result => {
-            //     const percentage = ((result.population / totalPopulation) * 100).toFixed(2); // Calcular porcentaje
-            //     return `${result.name} (${percentage}%)`; // Incluir porcentaje en el label
-            // });
-            // const data: number[] = resultados.map(result => result.population);
-
-            // const formattedResult = {
-            // labels: labels,
-            // datasets: [
-            //     {
-            //     data: data
-            //     }
-            // ]
-            // };
 
             const resultados = await obtenerGrafTortaTipoSala(fechaInicioObj, fechaFinObj);
             console.log("resultados tipo Torta: ", resultados);
@@ -1274,38 +1190,19 @@ export const route = (app: Application) => {
             const chartImage = await generateReportePieChart(formattedResult.labels, formattedResult.datasets[0].data, ' Tipos de Salas de Ensayo'); // Generar el gráfico de barras
             //const chartImageBasic = await generateBarChart(mesesString, arrCantidades); // Generar el gráfico de barras
             const pdfBytes = await generateReportePDF(chartImage, 'Reporte - Tipos de Salas de Ensayo', fechaInicio, fechaHasta); // Generar el PDF con el gráfico
-
+                 
+            if (!pdfBytes || pdfBytes.length === 0) {
+                throw new Error("El PDF no se generó o está vacío.");
+            }
             // crear nombre de archivo irrepetible
-            // const currentDate = new Date().toISOString().replace(/:/g, '-');
-            // const currentDatee = new Date()
-            // const currenDay = currentDatee.getDay()
-            // const currenMonth = currentDatee.getMonth()
-            // const currenYear = currentDatee.getFullYear()
-            // const currenHour = currentDatee.getTime()
+            const currentDate = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '_');
 
-            // const rutaPdf = `report_${currentDate}.pdf`
-            // const rutaPdf2 = `report_${currenDay}${currenMonth}${currenYear}${currenHour}${currenHour}.pdf`
-
-            // // Guardar el archivo PDF en el servidor
-            // const ruta = `C:/Users/manzu/Desktop/soundroom_final/pdf_soundroom/pdfs/${rutaPdf2}`
-            // await fs.writeFile(`C:/Users/manzu/Desktop/soundroom_final/pdf_soundroom/pdfs/${rutaPdf2}`, pdfBytes);
-
-            // // Enviar el archivo al cliente
-            // resp.setHeader('Content-Disposition', `attachment; filename="${rutaPdf2}"`);
-            // resp.setHeader('Content-Type', 'application/pdf');
-            // resp.download(
-            //     ruta, rutaPdf2, (err) => {
-            //         if (err) {
-            //             console.error('Error al enviar el archivo:', err);
-            //             resp.status(500).send('Error al descargar el archivo');
-            //         }
-                    
-            const nombreArchivo = `reporte_tipo_sala_${Date.now()}.pdf`;
+            // Enviar el archivo al cliente
+            const fileName = `reporte_reservas_${currentDate}.pdf`;
             resp.setHeader('Content-Type', 'application/pdf');
-            resp.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
-            console.log(Buffer.isBuffer(pdfBytes)); // true
-            resp.write(pdfBytes); // sin Buffer.from
-            resp.end();
+            resp.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+            resp.setHeader('Content-Length', pdfBytes.length);
+            resp.end(Buffer.from(pdfBytes));
 
           } catch (error) {
             return resp.status(500).json({ error: "Error al generar el reporte" });
@@ -1314,7 +1211,7 @@ export const route = (app: Application) => {
       );
 
    
-      app.get("/salasdeensayo/cantidadVaoraciones/", 
+      app.get("/salasdeensayo/cantidadValoraciones/", 
       auth,
       run(async (req: any, resp: Response) => {
           const errors = validator.validationResult(req)
@@ -1334,9 +1231,10 @@ export const route = (app: Application) => {
       }))
 
     //descargar reporte cantidad valoraciones por sala:
-    app.get("/salasdeensayo/descargarCantidadVaoraciones/", 
+    app.get("/salasdeensayo/descargarCantidadValoraciones/", 
         auth,
         run(async (req: any, resp: Response) => {
+          try {
             const errors = validator.validationResult(req)
             if(errors && !errors.isEmpty()){
                 throw ValidatorUtils.toArgumentsException(errors.array())
@@ -1356,48 +1254,28 @@ export const route = (app: Application) => {
 
             const fechaInicio =  dto.fechaI
             const fechaHasta =  dto.fechaH
-            console.log('Fechas Inicio y Fin')
-            console.log('Fecha Inicio: ', fechaInicio)
-            console.log('Fecha hasta: ', fechaHasta)
+            
 
             //Codigo Javascript :
             const chartImage = await generateReporteBarChart(NewUsersReport.labels, NewUsersReport.datasets[0].data, 'Cantidad de valoraciones'); // Generar el gráfico de barras
             //const chartImageBasic = await generateBarChart(mesesString, arrCantidades); // Generar el gráfico de barras
             const pdfBytes = await generateReporteValoracionesPDF(chartImage, 'Reporte - Cantidad de valoraciones', salaNombre,  fechaInicio, fechaHasta ); // Generar el PDF con el gráfico
 
+             if (!pdfBytes || pdfBytes.length === 0) {
+                throw new Error("El PDF no se generó o está vacío.");
+            }
             // crear nombre de archivo irrepetible
-            // const currentDate = new Date().toISOString().replace(/:/g, '-');
-            // const currentDatee = new Date()
-            // const currenDay = currentDatee.getDay()
-            // const currenMonth = currentDatee.getMonth()
-            // const currenYear = currentDatee.getFullYear()
-            // const currenHour = currentDatee.getTime()
-
-            // const rutaPdf = `report_${currentDate}.pdf`
-            // const rutaPdf2 = `report_${currenDay}${currenMonth}${currenYear}${currenHour}${currenHour}.pdf`
-
-            // // Guardar el archivo PDF en el servidor
-            // const ruta = `C:/Users/manzu/Desktop/soundroom_final/pdf_soundroom/pdfs/${rutaPdf2}`
-            // await fs.writeFile(`C:/Users/manzu/Desktop/soundroom_final/pdf_soundroom/pdfs/${rutaPdf2}`, pdfBytes);
-
-            // // Enviar el archivo al cliente
-            // resp.setHeader('Content-Disposition', `attachment; filename="${rutaPdf2}"`);
-            // resp.setHeader('Content-Type', 'application/pdf');
-            // resp.download(
-            //     ruta, rutaPdf2, (err) => {
-            //         if (err) {
-            //             console.error('Error al enviar el archivo:', err);
-            //             resp.status(500).send('Error al descargar el archivo');
-            //         }
-            //     }
-            // )  
+            const currentDate = new Date().toISOString().replace(/:/g, '-').replace(/\./g, '_');
             
-            const nombreArchivo = `reporte_sala_valoraciones_${Date.now()}.pdf`;
+            const fileName = `reporte_reservas_${currentDate}.pdf`;
             resp.setHeader('Content-Type', 'application/pdf');
-            resp.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
-            console.log(Buffer.isBuffer(pdfBytes)); // true
-            resp.write(pdfBytes); // sin Buffer.from
-            resp.end();
+            resp.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+            resp.setHeader('Content-Length', pdfBytes.length);
+            resp.end(Buffer.from(pdfBytes));
+          } catch (error) {
+            console.error('Error in PDF generation route:', error);
+            resp.status(500).send({ error: 'Failed to generate PDF' }); 
+          }
         
     }))
 
@@ -1480,7 +1358,29 @@ export const route = (app: Application) => {
       }
   )) 
 
-
+  // app.get("/salasdeensayo/opinionesAmisSalas/",
+  //    auth,
+  //   run (async (req: any, res: Response)=>{
+  //       try {
+  //         const idUser = req.user.id
+        
+  //         const opiniones = service.instance.getMyAllOpiniones(idUser)
+  //         res.json({
+  //           status: "success",
+  //           data: {
+  //             opiniones,
+  //           },
+  //           message: "Opiniones obtenidas correctamente"
+  //         })
+  //       } catch (error) {
+  //         console.error(error);
+  //         return res.status(500).json({
+  //           status: "error",
+  //           message: "Error al obtener opiniones"
+  //         });
+  //       }
+  //   }
+  // ))
 
 
 }
