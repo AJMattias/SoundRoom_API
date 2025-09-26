@@ -176,7 +176,7 @@ export class ReservationService{
     async getReservasPorMes (idRoom: string, fechaInicioStr: string, fechaFinStr: string) {
         try {
         
-            console.log(`Buscando sala con id: ${idRoom}`);
+            //console.log(`Buscando sala con id: ${idRoom}`);
 
             // Convertir las fechas de string a Date
             const fechaInicio = new Date(fechaInicioStr);
@@ -194,9 +194,9 @@ export class ReservationService{
     
             // Generar la lista de todos los meses entre fechaInicio y fechaFin
             let current = new Date(fechaInicio.getFullYear(), fechaInicio.getMonth(), 1);
-            console.log('current month: ', current)
+            //console.log('current month: ', current)
             let end = new Date(fechaFin.getFullYear(), fechaFin.getMonth(), 1);
-            console.log('last month: ', end)
+            //console.log('last month: ', end)
     
             while (current <= end) {
                 const mes = current.toISOString().substring(0, 7); // formato YYYY-MM
@@ -205,7 +205,7 @@ export class ReservationService{
                     data.push(0); // Inicializar a 0
                 }
                 current.setMonth(current.getMonth() + 1);
-                console.log('labels: ', labels);
+                //console.log('labels: ', labels);
             }
     
             // Encontrar las reservas que coincidan con las condiciones
@@ -215,7 +215,7 @@ export class ReservationService{
                 createdAt: { $gte: fechaInicio, $lte: fechaFin }
             });
     
-            console.log(`Reservas encontradas para la sala ${idRoom}: ${reservas.length}`);
+            //console.log(`Reservas encontradas para la sala ${idRoom}: ${reservas.length}`);
     
             // Agrupar las reservas por mes
             reservas.forEach(reserva => {
@@ -226,7 +226,7 @@ export class ReservationService{
                 }
             });
     
-            console.log(`Reservas agrupadas por mes: ${JSON.stringify({ labels, data })}`);
+            //console.log(`Reservas agrupadas por mes: ${JSON.stringify({ labels, data })}`);
     
             return {
                 labels,
@@ -234,7 +234,7 @@ export class ReservationService{
             }
 
             } catch (error) {
-            console.error(error);
+            //console.error(error);
             throw new Error('Error obteniendo las reservas por mes');
         }
     }

@@ -89,15 +89,25 @@ export class ReservationDao{
         )
     }
 
-    async getByOwnerA(ownerId: string): Promise<Array<Reservation>>{
-        return (await ReservationModel.find({
-            //canceled: "false",
-             idOwner: ownerId}).populate("idRoom").populate("idUser").exec())
-        .map((doc: ReservationDoc)=>{
-            return this.mapToReservation(doc)
-        }
-        )
+    async getByOwnerA(ownerId: string): Promise<Array<Reservation>> {
+        return (
+            await ReservationModel.find({
+            idOwner: ownerId,
+            })
+            .populate("idUser") // usuario que hizo la reserva
+            .populate({
+                path: "idRoom",      // sala de ensayo
+                populate: {
+                path: "imagenes",  // imágenes dentro de la sala
+                model: "Imagen",   // nombre del modelo referenciado
+                },
+            })
+            .exec()
+        ).map((doc: ReservationDoc) => {
+            return this.mapToReservation(doc);
+        });
     }
+
     async getByOwnerACanceled(ownerId: string): Promise<Array<Reservation>>{
         return (await ReservationModel.find({canceled: "true", idOwner: ownerId}).exec())
         .map((doc: ReservationDoc)=>{

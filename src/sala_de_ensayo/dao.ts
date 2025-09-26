@@ -90,20 +90,49 @@ async getSearch(sala: CreateSearchSdEDto):Promise<Array<SalaDeEnsayo>>{
 }
 
 
-async getByOwner(idOwner: string):Promise<Array<SalaDeEnsayo>>{
-    // return(await SalaDeEnsayoModel.find({
-    //     idOwner: mongoose.Types.ObjectId(idOwner), 
-    //     //enabled: true
-    // }).populate("imagenes").exec())
-    // .map((doc:SalaDeEnsayoDoc)=>{
-    //     return this.mapToSalaDeEnsayoImagen(doc)
-    // })
-    
-    const sala = await SalaDeEnsayoModel.find({idOwner: mongoose.Types.ObjectId(idOwner)}).populate("imagenes").populate("opiniones").exec()
+async getByOwner(idOwner: string):Promise<Array<SalaDeEnsayo>>{  
+    const sala = await SalaDeEnsayoModel.find({idOwner: mongoose.Types.ObjectId(idOwner)})
+        .populate("imagenes")
+        .populate({
+            path: "opiniones",
+            populate: {
+                path: "idUser",
+                model: "User" // Asegúrate de que este es el nombre de tu modelo de usuario
+            }
+        }).exec()
     console.log('salas dao by owner: ', sala)
     return(sala.map((doc:SalaDeEnsayoDoc)=>{
         return this.mapToSalaDeEnsayoImagen(doc)
     }))
+}
+
+async getByOwnerPaginated(
+  idOwner: string, 
+  page: number = 1, 
+  limit: number = 10
+): Promise<{ data: SalaDeEnsayo[]; total: number; page: number; totalPages: number }> {
+
+  const skip = (page - 1) * limit;
+
+  const [salas, total] = await Promise.all([
+    SalaDeEnsayoModel.find({ idOwner: new mongoose.Types.ObjectId(idOwner) })
+      .populate("imagenes")
+      .populate({
+        path: "opiniones",
+        populate: { path: "idUser", model: "User" }
+      })
+      .skip(skip)
+      .limit(limit)
+      .exec(),
+    SalaDeEnsayoModel.countDocuments({ idOwner: new mongoose.Types.ObjectId(idOwner) })
+  ]);
+
+  return {
+    data: salas.map((doc: SalaDeEnsayoDoc) => this.mapToSalaDeEnsayo(doc)),
+    total,
+    page,
+    totalPages: Math.ceil(total / limit)
+  };
 }
 
 async store(salaDeEnsayo: CreateSalaDeEnsayoDto): Promise<SalaDeEnsayo>{
@@ -446,6 +475,20 @@ async getOpinionToArtist( artistId: string): Promise<Array<Opinion>>{
     .map((doc: OpinionDoc)=>{
         return this.mapToOpinion(doc)
     })
+}
+
+async getOpinionByRoom(idRoom: string): Promise<Array<Opinion>>{
+    const idroom = mongoose.Types.ObjectId(idRoom);
+
+    const opinionDoc = await OpinionModel.find({idRoom: idroom }).exec()
+    console.log('dao getted opinion to room: ', opinionDoc)
+    if(!opinionDoc) throw new ModelNotFoundException()
+    const opinionDto: Opinion[] = opinionDoc.map((doc: OpinionDoc)=>{
+        return this.mapToOpinion(doc)
+    })
+    return opinionDto
+
+
 }
 
 
