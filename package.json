@@ -9,7 +9,7 @@
     "start": "node dist/app.js",
     "vercel-build": "npm run build && npm prune --production"
   },
-   "engines": {
+  "engines": {
     "node": "18.x"
   },
   "keywords": [],
@@ -24,6 +24,7 @@
     "@types/mongoose": "^5.11.97",
     "@types/multer": "^2.0.0",
     "@types/uuidv4": "^5.0.0",
+    "@vercel/node": "^5.3.24",
     "canvas": "^2.11.2",
     "chartjs-node-canvas": "^5.0.0",
     "cloudinary": "^1.41.3",
