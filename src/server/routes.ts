@@ -30,6 +30,7 @@ export const routes = (app : express.Application) => {
         console.log(req)
         resp.send("Hello world")
     })
+    //app.options("/auth", cors());
     users.route(app)
     comodidad.route(app)
     configuracion.route(app)

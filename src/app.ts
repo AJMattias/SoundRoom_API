@@ -23,7 +23,7 @@
 import * as dotenv from "dotenv"
 dotenv.config()
 import express from "express"
-import { SoundRoomsServer } from "./server/server.js" // Asegúrate que la ruta sea correcta
+import { SoundRoomsServer } from "./server/server" // Asegúrate que la ruta sea correcta
 
 const app = express()
 

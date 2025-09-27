@@ -140,18 +140,43 @@ export class SoundRoomsServer {
             await this._startEngines(); // Conexión a DB/Redis
             this._app.set('trust proxy', true);
 
-            const allowedOrigins = [
-                'http://localhost:5173', 
-                // Agrega tu dominio de producción de Vercel aquí si es necesario
-                // 'https://nombre-de-tu-app.vercel.app' 
-            ];
+            // const allowedOrigins = [
+            //     'http://localhost:5173', 
+            //     // Agrega tu dominio de producción de Vercel aquí si es necesario
+            //     // 'https://nombre-de-tu-app.vercel.app' 
+            // ];
+
+            // this._app.use(cors({
+            //     //origin: allowedOrigins,
+            //     origin: 'http://localhost:5173',
+            //     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+            //     allowedHeaders: ['Content-Type', 'Authorization']
+            // }));
 
             this._app.use(cors({
-                //origin: allowedOrigins,
-                origin: 'http://localhost:5173',
-                methods: ['GET', 'POST', 'PUT', 'DELETE'],
-                allowedHeaders: ['Content-Type', 'Authorization']
+                origin: function (origin, callback) {
+                    // Permitir solicitudes sin origen (como apps móviles o Postman)
+                    if (!origin) return callback(null, true);
+                    
+                    const allowedOrigins = [
+                        'http://localhost:5173',
+                        'https://tu-frontend.vercel.app' // Reemplaza con tu dominio real
+                    ];
+                    
+                    if (allowedOrigins.indexOf(origin) !== -1) {
+                        callback(null, true);
+                    } else {
+                        callback(new Error('Not allowed by CORS'));
+                    }
+                },
+                credentials: true,
+                methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+                allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
             }));
+
+            // Manejar específicamente las solicitudes OPTIONS
+            this._app.options('*', cors());
+
             
             middleware.middleware(this._app);
 
@@ -163,6 +188,11 @@ export class SoundRoomsServer {
             //this._app.use('/pdfs', express.static(path.join('pdfs'))); // Ajustado para ser relativo
             // console.log('Serving static files from: ...'); // Remover logs de paths locales
 
+            this._app.use((req, res, next) => {
+                console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`)
+                console.log('Origin:', req.headers.origin)
+                next()
+            })
             this._app.use('/image', imageRouter); 
             this._app.use(express.json());
             this._app.use(express.urlencoded({extended: true}));
