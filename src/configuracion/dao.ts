@@ -1,7 +1,4 @@
-import { StringUtils } from "src/common/utils/string_utils";
-import { ObjectId } from "mongoose";
 import { Configuracion, ConfiguracionDoc, ConfiguracionModel } from "./models";
-import { UserModel } from "../users/models";
 import { ModelNotFoundException } from "../common/exception/exception";
 
 export class ConfiguracionDao{

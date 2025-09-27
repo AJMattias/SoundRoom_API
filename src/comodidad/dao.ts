@@ -1,7 +1,4 @@
-import { StringUtils } from "src/common/utils/string_utils";
-import { ObjectId } from "mongoose";
 import { Comodidad, ComodidadDoc, ComodidadModel } from "./models";
-import { UserModel } from "../users/models";
 import { ModelNotFoundException } from "../common/exception/exception";
 
 export class ComodidadDao{

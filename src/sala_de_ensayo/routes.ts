@@ -9,7 +9,7 @@ import {ValidatorUtils} from "../common/utils/validator_utils"
 import multer from "../common/utils/storage";
 import  * as imageService from "../imagen/service"
 import { admin, auth, checkArtistOrSalaDeEnsayo, checkPermission, validarDiaSemana } from "../server/middleware";
-import { UserDto } from "src/users/dto";
+import { UserDto } from "../users/dto";
 import * as userService from "../users/service"
 import { PerfilModel } from "../perfil/models";
 import { generateReporteBarChart, generateReportePDF, generateReportePieChart, generateReporteValoracionesPDF } from "../common/utils/generateReportePdf";

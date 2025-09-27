@@ -29,4 +29,4 @@ export const PermisoSchema = new Schema({
     enabled: String,
 });
 
-export const PermisoModel = mongoose.model<PermisoDoc>("Permiso", PermisoSchema)
+export const PermisoModel = mongoose.model<any>("Permiso", PermisoSchema)

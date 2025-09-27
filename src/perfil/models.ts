@@ -30,4 +30,4 @@ export const PerfilSchema = new Schema({
         ref:'Permiso'}]
 });
 
-export const PerfilModel = mongoose.model<PerfilDoc>("Perfil", PerfilSchema)
+export const PerfilModel = mongoose.model<any>("Perfil", PerfilSchema)

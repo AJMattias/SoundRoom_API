@@ -43,4 +43,4 @@ export const PagoSchema = new Schema({
         ref:"Reservation"},
 })
 
-export const PagoModel = mongoose.model<PagoDoc>("Pago", PagoSchema)
+export const PagoModel = mongoose.model<any>("Pago", PagoSchema)

@@ -69,11 +69,11 @@ export class PerfilDao{
 
         for (const perfil of todosPerfiles) {
             // Convertir permisos a array de strings para comparar
-            const permisosStrings = perfil.permisos?.map(p => p.toString()) || [];
+            const permisosStrings = perfil.permisos?.map((p:any)=> p.toString()) || [];
             
             if (permisosStrings.includes(permisoId.toString())) {
                 // Filtrar y mantener como ObjectId
-                const nuevosPermisos = perfil.permisos?.filter(p => 
+                const nuevosPermisos = perfil.permisos?.filter((p: any) => 
                     p.toString() !== permisoId.toString()
                 ) || [];
 

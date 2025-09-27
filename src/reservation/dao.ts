@@ -3,7 +3,7 @@ import {StringUtils} from "../common/utils/string_utils"
 import { ReservationModel, Reservation, ReservationSchema, ReservationDoc } from "./model"
 import { CreateReservationDto, DeleteReservationDto, ReservationDto } from "./dto"
 import { dangerouslyDisableDefaultSrc } from "helmet/dist/middlewares/content-security-policy"
-import { UserModel } from "src/users/models"
+import { UserModel } from "../users/models"
 var mongoose = require('mongoose');
 
 

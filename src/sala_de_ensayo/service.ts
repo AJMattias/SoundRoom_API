@@ -1,4 +1,4 @@
-import { UserModel } from "src/users/models";
+import { UserModel } from "../users/models";
 import { PerfilModel } from "../perfil/models";
 import * as dao from "./dao"
 import { CreateOpinionArtistDto, CreateOpinionDto, CreateSalaDeEnsayoDto2, CreateSalaDeEnsayoDtoOpinion, OpinionDto, PopularSalaDeEnsayoDto, SalaDeEnsayoDto, UpdateImageDto, UpdateSalaDeEnsayoDto2} from "./dto";

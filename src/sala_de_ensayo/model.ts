@@ -136,7 +136,7 @@ export const SalaDeEnsayoSchema = new Schema({
 //SalaDeEnsayoSchema.index({ nameSalaEnsayo: 'text' });
 
 
-export const SalaDeEnsayoModel = mongoose.model<SalaDeEnsayoDoc>("Sala_De_Ensayo", SalaDeEnsayoSchema)
+export const SalaDeEnsayoModel = mongoose.model<any>("Sala_De_Ensayo", SalaDeEnsayoSchema)
 
 
 export const OpinionSchema = new Schema({ 
@@ -182,4 +182,4 @@ export interface OpinionDoc extends Document{
     idArtist: string
 }
 
-export const OpinionModel = mongoose.model<OpinionDoc>("Opinion", OpinionSchema)
+export const OpinionModel = mongoose.model<any>("Opinion", OpinionSchema)

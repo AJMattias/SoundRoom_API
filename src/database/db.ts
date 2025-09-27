@@ -15,10 +15,7 @@ export const connect  = async () =>{
         }
         await mongoose.connect(mongoUri,
         {
-            useNewUrlParser: true, 
-            useUnifiedTopology: true,
-            useFindAndModify:false
-        })
+           })
         mongoose.set('returnOriginal', false)
     } catch (e){
         console.error("Error connecting to mongoose")

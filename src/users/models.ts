@@ -130,6 +130,6 @@ export const UserSchema = new Schema({
     resetPasswordToken: { type: String }, // Token se guarda como string
     resetPasswordExpires: { type: Date }, // Fecha de expiración se guarda como Date
 
-})
+} as any )
 
-export const    UserModel = mongoose.model<UserDoc>("User", UserSchema)
+export const UserModel = mongoose.model<any>("User", UserSchema)

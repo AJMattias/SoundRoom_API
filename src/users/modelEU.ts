@@ -25,4 +25,4 @@ export const EstadoUsuarioSchema = new Schema({
     estado: String
 })
 
-export const EstadoUsuarioModel = mongoose.model<EstadoUsuarioDoc>("EstadoUsuario", EstadoUsuarioSchema)
+export const EstadoUsuarioModel = mongoose.model<any>("EstadoUsuario", EstadoUsuarioSchema)

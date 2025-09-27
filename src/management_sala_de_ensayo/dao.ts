@@ -1,4 +1,4 @@
-import { StringUtils } from "src/common/utils/string_utils";
+import { StringUtils } from "../common/utils/string_utils";
 import { ObjectId } from "mongoose";
 import { Type, StateSalaEnsayo, TypeModel, StateSalaEnsayoModel, TypeDoc, StateSalaEnsayoDoc, StateSalaEnsayoSchema, TypeSchema } from "./models";
 import { ModelNotFoundException } from "../common/exception/exception";
@@ -86,7 +86,7 @@ export class ManagementDao{
 
     mapToType(document: TypeDoc): Type {
         return {
-            id: document._id,
+            id: document._id as unknown as string,
             name: document.name,
             createdAt: document.createdAt,
             deletedAt: document.deletedAt

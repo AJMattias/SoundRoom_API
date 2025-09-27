@@ -41,5 +41,5 @@ export const StateSalaEnsayoSchema = new Schema({
     createdAt: Date
 });
 
-export const TypeModel = mongoose.model<TypeDoc>("Type", TypeSchema)
-export const StateSalaEnsayoModel = mongoose.model<StateSalaEnsayoDoc>("StateSalaEnsayo", StateSalaEnsayoSchema)
+export const TypeModel = mongoose.model<any>("Type", TypeSchema)
+export const StateSalaEnsayoModel = mongoose.model<any>("StateSalaEnsayo", StateSalaEnsayoSchema)
