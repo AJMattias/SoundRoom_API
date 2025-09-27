@@ -10,7 +10,7 @@
     "vercel-build": "npm run build && npm prune --production"
   },
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   },
   "keywords": [],
   "author": "",
