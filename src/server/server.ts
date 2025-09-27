@@ -137,21 +137,12 @@ export class SoundRoomsServer {
             this._app.set('trust proxy', true);
 
             // **CORS CON LOGS**
-            this._app.use((req, res, next) => {
-                console.log('🎯 CORS Middleware ejecutándose para:', req.method, req.url);
-                console.log('📍 Origin:', req.headers.origin);
-                
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-                res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-                
-                if (req.method === 'OPTIONS') {
-                    console.log('✅ OPTIONS request handled');
-                    return res.status(200).end();
-                }
-                
-                next();
-            });
+            this._app.use(cors({
+                origin: '*', // Permite CUALQUIER origen. (Puedes cambiar a 'http://localhost:5173' en desarrollo)
+                methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+                preflightContinue: false,
+                optionsSuccessStatus: 204 // Mejor práctica para OPTIONS
+            }));
 
             // ... el resto de tu middleware
             middleware.middleware(this._app);
@@ -165,7 +156,7 @@ export class SoundRoomsServer {
             console.log('🔄 Cargando rutas...');
             routes(this._app);
             console.log('✅ Rutas cargadas');
-            
+
             return this._app;
 
         } catch (error) {
