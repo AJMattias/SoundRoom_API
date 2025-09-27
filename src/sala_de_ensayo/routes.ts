@@ -15,7 +15,7 @@ import { PerfilModel } from "../perfil/models";
 import { generateReporteBarChart, generateReportePDF, generateReportePieChart, generateReporteValoracionesPDF } from "../common/utils/generateReportePdf";
 import * as perfilService from "../perfil/service";
 import { cloudinary } from "../common/utils/cloudinaryConfig";
-import Email from '../server/MailCtrl';
+import * as Email from '../server/MailCtrl';
 import fs from 'fs-extra';
 
 

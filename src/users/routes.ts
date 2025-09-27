@@ -27,7 +27,8 @@ import * as opinionService from "../sala_de_ensayo/service"
 import { UserDoc, UserModel } from "./models"
 import { PerfilModel } from "../perfil/models"
 import { add } from "date-fns";
-const { sendEmailAsync } = require('../server/mailctrl');
+// const { sendEmailAsync } = require('../server/mailctrl');
+import { sendEmailAsync } from '../server/MailCtrl.js'
 
 /**
  * 
