@@ -31,6 +31,23 @@ export const routes = (app : express.Application) => {
         resp.send("Hello world")
     })
     //app.options("/auth", cors());
+
+    app.get("/", async (req, resp) => {
+        resp.json({ 
+            message: "API is working!",
+            testAuth: "Use POST /auth with email and password",
+            timestamp: new Date().toISOString()
+        });
+    });
+    app.post('/auth-test', (req, res) => {
+        console.log('✅ TEST /auth-test received');
+        res.json({ 
+            message: 'Auth test endpoint working!',
+            body: req.body,
+            timestamp: new Date().toISOString()
+        });
+    });
+
     users.route(app)
     comodidad.route(app)
     configuracion.route(app)

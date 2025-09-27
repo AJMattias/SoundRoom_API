@@ -135,79 +135,121 @@ export class SoundRoomsServer {
      * Nuevo método para configurar la app sin iniciar el listener.
      * Retorna la instancia de Express.
      */
+    // async getApp(): Promise<express.Application> {
+    //     try {
+    //         await this._startEngines(); // Conexión a DB/Redis
+    //         this._app.set('trust proxy', true);
+
+    //         // const allowedOrigins = [
+    //         //     'http://localhost:5173', 
+    //         //     // Agrega tu dominio de producción de Vercel aquí si es necesario
+    //         //     // 'https://nombre-de-tu-app.vercel.app' 
+    //         // ];
+
+    //         // this._app.use(cors({
+    //         //     //origin: allowedOrigins,
+    //         //     origin: 'http://localhost:5173',
+    //         //     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    //         //     allowedHeaders: ['Content-Type', 'Authorization']
+    //         // }));
+
+    //         this._app.use(cors({
+    //             origin: function (origin, callback) {
+    //                 // Permitir solicitudes sin origen (como apps móviles o Postman)
+    //                 if (!origin) return callback(null, true);
+                    
+    //                 const allowedOrigins = [
+    //                     'http://localhost:5173',
+    //                     'https://tu-frontend.vercel.app' // Reemplaza con tu dominio real
+    //                 ];
+                    
+    //                 if (allowedOrigins.indexOf(origin) !== -1) {
+    //                     callback(null, true);
+    //                 } else {
+    //                     callback(new Error('Not allowed by CORS'));
+    //                 }
+    //             },
+    //             credentials: true,
+    //             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    //             allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+    //         }));
+
+    //         // Manejar específicamente las solicitudes OPTIONS
+    //         this._app.options('*', cors());
+
+            
+    //         middleware.middleware(this._app);
+
+    //         // ... (Toda tu lógica de CORS) ...
+            
+    //         // ATENCIÓN: Las rutas estáticas con path locales (C:/...) NO funcionarán en Vercel.
+    //         // Debes usar rutas relativas al proyecto. Por ahora las dejo, pero ten cuidado.
+    //         //this._app.use('/uploads', express.static(path.resolve('uploads')));
+    //         //this._app.use('/pdfs', express.static(path.join('pdfs'))); // Ajustado para ser relativo
+    //         // console.log('Serving static files from: ...'); // Remover logs de paths locales
+
+    //         this._app.use((req, res, next) => {
+    //             console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`)
+    //             console.log('Origin:', req.headers.origin)
+    //             next()
+    //         })
+    //         this._app.use('/image', imageRouter); 
+    //         this._app.use(express.json());
+    //         this._app.use(express.urlencoded({extended: true}));
+    //         routes(this._app);
+    //         handler.handle(this._app);
+            
+    //         return this._app; // <--- **Lo más importante: Retornar la app**
+
+    //     } catch (error) {
+    //         console.error("Error initialazing the app");
+    //         console.error(error);
+    //         // En Vercel, no llamas a process.exit(1), solo lanzas el error.
+    //         throw error;
+    //     }
+    // }
+
     async getApp(): Promise<express.Application> {
-        try {
-            await this._startEngines(); // Conexión a DB/Redis
-            this._app.set('trust proxy', true);
+    try {
+        await this._startEngines();
+        this._app.set('trust proxy', true);
 
-            // const allowedOrigins = [
-            //     'http://localhost:5173', 
-            //     // Agrega tu dominio de producción de Vercel aquí si es necesario
-            //     // 'https://nombre-de-tu-app.vercel.app' 
-            // ];
+        // CORS configuration
+        this._app.use(cors({
+            origin: 'http://localhost:5173',
+            credentials: true,
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            allowedHeaders: ['Content-Type', 'Authorization']
+        }));
 
-            // this._app.use(cors({
-            //     //origin: allowedOrigins,
-            //     origin: 'http://localhost:5173',
-            //     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-            //     allowedHeaders: ['Content-Type', 'Authorization']
-            // }));
+        // Log específico para /auth
+        this._app.use((req, res, next) => {
+            if (req.path === '/auth' || req.method === 'OPTIONS') {
+                console.log('🔍 Intercepting request:', {
+                    method: req.method,
+                    path: req.path,
+                    originalUrl: req.originalUrl,
+                    headers: req.headers,
+                    timestamp: new Date().toISOString()
+                });
+            }
+            next();
+        });
 
-            this._app.use(cors({
-                origin: function (origin, callback) {
-                    // Permitir solicitudes sin origen (como apps móviles o Postman)
-                    if (!origin) return callback(null, true);
-                    
-                    const allowedOrigins = [
-                        'http://localhost:5173',
-                        'https://tu-frontend.vercel.app' // Reemplaza con tu dominio real
-                    ];
-                    
-                    if (allowedOrigins.indexOf(origin) !== -1) {
-                        callback(null, true);
-                    } else {
-                        callback(new Error('Not allowed by CORS'));
-                    }
-                },
-                credentials: true,
-                methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-                allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-            }));
+        middleware.middleware(this._app);
+        this._app.use(express.json());
+        this._app.use(express.urlencoded({extended: true}));
+        
+        routes(this._app);
+        handler.handle(this._app);
+        
+        return this._app;
 
-            // Manejar específicamente las solicitudes OPTIONS
-            this._app.options('*', cors());
-
-            
-            middleware.middleware(this._app);
-
-            // ... (Toda tu lógica de CORS) ...
-            
-            // ATENCIÓN: Las rutas estáticas con path locales (C:/...) NO funcionarán en Vercel.
-            // Debes usar rutas relativas al proyecto. Por ahora las dejo, pero ten cuidado.
-            //this._app.use('/uploads', express.static(path.resolve('uploads')));
-            //this._app.use('/pdfs', express.static(path.join('pdfs'))); // Ajustado para ser relativo
-            // console.log('Serving static files from: ...'); // Remover logs de paths locales
-
-            this._app.use((req, res, next) => {
-                console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`)
-                console.log('Origin:', req.headers.origin)
-                next()
-            })
-            this._app.use('/image', imageRouter); 
-            this._app.use(express.json());
-            this._app.use(express.urlencoded({extended: true}));
-            routes(this._app);
-            handler.handle(this._app);
-            
-            return this._app; // <--- **Lo más importante: Retornar la app**
-
-        } catch (error) {
-            console.error("Error initialazing the app");
-            console.error(error);
-            // En Vercel, no llamas a process.exit(1), solo lanzas el error.
-            throw error;
-        }
+    } catch (error) {
+        console.error("Error initializing the app:", error);
+        throw error;
     }
+}
 
     // ... (Tu método _startEngines es correcto) ...
     async _startEngines() : Promise<void> {
