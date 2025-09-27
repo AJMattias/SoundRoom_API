@@ -7,7 +7,7 @@
     "dev": "ts-node-dev src/app.ts",
     "build": "tsc",
     "start": "node built/app.js",
-    "vercel-build": "npm run build",
+    "vercel-build": "npx tsc",
     "local": "npm run build && npm run start"
   },
   "engines": {
