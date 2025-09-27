@@ -63,15 +63,10 @@ import express from "express"
 import { SoundRoomsServer } from "./server/server.js"
 
 const app = express()
-
-process.on('uncaughtException', (error) => {
-    console.error("Uncaught fatal exception:", error)
-}) 
-
 const server = new SoundRoomsServer(app)
 
-// **SOLO ESTA LÍNEA - REEMPLAZA TODO LO DEMÁS DEL FINAL**
-module.exports = server.getApp();
+// **OPCIÓN 2**
+export default server.getApp().then(app => app);
 
 // **SOLO PARA DESARROLLO LOCAL**
 if (process.env.NODE_ENV !== 'production') {
