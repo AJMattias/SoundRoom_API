@@ -38,6 +38,9 @@ export const route = (app: Application) => {
      *  Listamos todos los usuarios en el backend.  Esto es solo a fines de la demo
      *  Ademas nos servira para el desarrollo de los otros tickets.
      */
+
+    
+
     app.get("/users/", 
         auth,
         admin,
