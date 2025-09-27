@@ -115,7 +115,8 @@ const middleware = require("./middleware")
 import cors from "cors";
 import path from "path";
 import imageRouter from "../imagen/routes.js";
-const routes = require("./routes.js")
+import {routes} from "./routes.js";
+//const routes = require("./routes.js")
 const handler  = require("../common/exception/handler.js")
 import * as db from "../database/db.js"
 
@@ -165,7 +166,7 @@ export class SoundRoomsServer {
             this._app.use('/image', imageRouter); 
             this._app.use(express.json());
             this._app.use(express.urlencoded({extended: true}));
-            routes.route(this._app);
+            routes(this._app);
             handler.handle(this._app);
             
             return this._app; // <--- **Lo más importante: Retornar la app**

@@ -22,7 +22,7 @@
  import * as reservation from "../reservation/routes"
  import * as pago from "../pago/routes"
  
-export const  route = (app : express.Application) => {
+export const routes = (app : express.Application) => {
 
     app.get("/", async (req, resp) => {
         console.log("Got a request")
