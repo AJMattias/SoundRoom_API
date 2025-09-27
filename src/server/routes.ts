@@ -24,17 +24,14 @@
  
 export const routes = (app : express.Application) => {
 
-    // app.get("/", async (req, resp) => {
-    //     console.log("Got a request")
-    //     console.log("req")
-    //     console.log(req)
-    //     resp.send("Hello world")
-    // })
-    
-
-    app.get("/", async (req, resp) => {
-        resp.send("Hello world - CORS fixed")
+     // Ruta de test
+    app.post('/auth-test', (req, res) => {
+        res.json({ message: 'Auth test funciona!', body: req.body });
     });
+
+    app.get("/get-test", async (req, resp) => {
+        resp.send("Hello world - API funcionando")
+    })
     // **MANEJADOR ESPECÍFICO PARA OPTIONS /auth**
     app.options('/auth', (req, res) => {
         res.header('Access-Control-Allow-Origin', 'http://localhost:5173');

@@ -161,6 +161,11 @@ export class SoundRoomsServer {
             routes(this._app);
             handler.handle(this._app);
 
+             // **VERIFICÁ QUE ESTO SE EJECUTE**
+            console.log('🔄 Cargando rutas...');
+            routes(this._app);
+            console.log('✅ Rutas cargadas');
+            
             return this._app;
 
         } catch (error) {
