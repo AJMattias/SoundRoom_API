@@ -24,28 +24,23 @@
  
 export const routes = (app : express.Application) => {
 
-    app.get("/", async (req, resp) => {
-        console.log("Got a request")
-        console.log("req")
-        console.log(req)
-        resp.send("Hello world")
-    })
-    //app.options("/auth", cors());
+    // app.get("/", async (req, resp) => {
+    //     console.log("Got a request")
+    //     console.log("req")
+    //     console.log(req)
+    //     resp.send("Hello world")
+    // })
+    
 
     app.get("/", async (req, resp) => {
-        resp.json({ 
-            message: "API is working!",
-            testAuth: "Use POST /auth with email and password",
-            timestamp: new Date().toISOString()
-        });
+        resp.send("Hello world - CORS fixed")
     });
-    app.post('/auth-test', (req, res) => {
-        console.log('✅ TEST /auth-test received');
-        res.json({ 
-            message: 'Auth test endpoint working!',
-            body: req.body,
-            timestamp: new Date().toISOString()
-        });
+    // **MANEJADOR ESPECÍFICO PARA OPTIONS /auth**
+    app.options('/auth', (req, res) => {
+        res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+        res.header('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        res.status(200).send();
     });
 
     users.route(app)

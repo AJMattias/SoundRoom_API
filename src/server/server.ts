@@ -132,40 +132,40 @@ export class SoundRoomsServer {
     }
 
     async getApp(): Promise<express.Application> {
-    try {
-        await this._startEngines();
-        this._app.set('trust proxy', true);
+        try {
+            await this._startEngines();
+            this._app.set('trust proxy', true);
 
-        // CORS configuration
-        this._app.use(cors({
-            origin: 'http://localhost:5173',
-            credentials: true,
-            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization']
-        }));
+            // **CORS LO PRIMERO - VERSIÓN AGRESIVA**
+            this._app.use((req, res, next) => {
+                res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+                res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+                res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+                
+                // **MANEJO EXPLÍCITO DE OPTIONS**
+                if (req.method === 'OPTIONS') {
+                    console.log('✅ Handling OPTIONS request');
+                    return res.status(200).end();
+                }
+                
+                next();
+            });
 
-        // Log específico para /auth
-         this._app.options('*', (req, res) => {
-            res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-            res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-            res.status(200).send();
-        });
+            // ... el resto de tu middleware
+            middleware.middleware(this._app);
+            this._app.use(express.json());
+            this._app.use(express.urlencoded({extended: true}));
+            
+            routes(this._app);
+            handler.handle(this._app);
 
-        middleware.middleware(this._app);
-        this._app.use(express.json());
-        this._app.use(express.urlencoded({extended: true}));
-        
-        routes(this._app);
-        handler.handle(this._app);
-        
-        return this._app;
+            return this._app;
 
-    } catch (error) {
-        console.error("Error initializing the app:", error);
-        throw error;
+        } catch (error) {
+            console.error("Error initializing the app:", error);
+            throw error;
+        }
     }
-}
 
     // ... (Tu método _startEngines es correcto) ...
     async _startEngines() : Promise<void> {
