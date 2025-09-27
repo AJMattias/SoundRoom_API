@@ -137,19 +137,16 @@ export class SoundRoomsServer {
             this._app.set('trust proxy', true);
 
             // **CORS LO PRIMERO - VERSIÓN AGRESIVA**
-            // this._app.use((req, res, next) => {
-            //     res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-            //     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-            //     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-                
-            //     // **MANEJO EXPLÍCITO DE OPTIONS**
-            //     if (req.method === 'OPTIONS') {
-            //         console.log('✅ Handling OPTIONS request');
-            //         return res.status(200).end();
-            //     }
-                
-            //     next();
-            // });
+           this._app.use((req, res, next) => {
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Methods', '*');
+            res.header('Access-Control-Allow-Headers', '*');
+            
+            if (req.method === 'OPTIONS') {
+                return res.status(200).end();
+            }
+            next();
+        });
 
             // ... el resto de tu middleware
             middleware.middleware(this._app);
