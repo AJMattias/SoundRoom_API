@@ -14,7 +14,7 @@ export async function generateBarChartExample(labels, data) {
     const backgroundColour = 'white'
     const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height, backgroundColour });
 
-    const data = {
+    const data1 = {
         type: 'bar',
         data: {
             labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
@@ -49,7 +49,7 @@ export async function generateBarChartExample(labels, data) {
         }
     };
 
-    const chartImage = await chartJSNodeCanvas.renderToBuffer(data);
+    const chartImage = await chartJSNodeCanvas.renderToBuffer(data1);
 
     return chartImage;
 }
@@ -66,7 +66,7 @@ export async function generateBarChart(labels, data) {
     const backgroundColour = 'white'
     const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height, backgroundColour });
 
-    const data = {
+    const data2 = {
         type: 'bar',
         data: {
             labels: labels,
@@ -100,7 +100,7 @@ export async function generateBarChart(labels, data) {
         }
     };
 
-    const chartImage = await chartJSNodeCanvas.renderToBuffer(data);
+    const chartImage = await chartJSNodeCanvas.renderToBuffer(data2);
 
     return chartImage;
 }
