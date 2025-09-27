@@ -69,16 +69,29 @@ const server = new SoundRoomsServer(app)
 export default server.getApp().then(app => app);
 
 // **SOLO PARA DESARROLLO LOCAL**
-if (process.env.NODE_ENV !== 'production') {
-    const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+// if (process.env.NODE_ENV !== 'production') {
+//     const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+//     server.getApp()
+//         .then(app => {
+//             app.listen(port, '0.0.0.0', () => {
+//                 console.log(`[Local DEV] Server running on port ${port}`);
+//             });
+//         })
+//         .catch(error => {
+//             console.error('Failed to start server:', error);
+//             process.exit(1);
+//         });
+// }
+if (require.main === module || process.env.NODE_ENV !== 'production') {
+    const port = process.env.PORT || 3000;
     server.getApp()
         .then(app => {
-            app.listen(port, '0.0.0.0', () => {
-                console.log(`[Local DEV] Server running on port ${port}`);
+            app.listen(port, () => {
+                console.log(`🚀 Server running locally on port ${port}`);
             });
         })
         .catch(error => {
-            console.error('Failed to start server:', error);
+            console.error('❌ Failed to start server:', error);
             process.exit(1);
         });
 }
