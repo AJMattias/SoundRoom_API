@@ -9,7 +9,7 @@ import {ArgumentsException, AuthorizationException} from "../common/exception/ex
 import {ErrorCode} from "../common/utils/constants"
 import {ValidatorUtils} from "../common/utils/validator_utils"
 import { dangerouslyDisableDefaultSrc } from "helmet/dist/middlewares/content-security-policy"
-import { generateBarChartExample, generatePDF, generateBarChart  } from '../common/utils/generatePdf'
+import { generateBarChartExample, generatePDF, generateBarChart } from '../common/utils/generatePdf';
 import { generateReporteBarChartExample, generateReportePDF, generateReporteBarChart  } from '../common/utils/generateReportePdf'
 import { convertirMeses } from "../common/utils/mesesDiccionario"
 import path from "path"
@@ -26,8 +26,8 @@ import { Buffer } from 'buffer';
 import * as opinionService from "../sala_de_ensayo/service"
 import { UserDoc, UserModel } from "./models"
 import { PerfilModel } from "../perfil/models"
-import { add } from "date-fns"
-import { sendEmail, sendEmailAsync } from "../server/MailCtrl"
+import { add } from "date-fns";
+const { sendEmailAsync } = require('../server/mailctrl');
 
 /**
  * 
