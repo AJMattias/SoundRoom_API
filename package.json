@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev src/app.ts",
     "build": "tsc",
-    "start": "node dist/app.js",
+    "start": "node built/app.js",
     "vercel-build": "npm run build && npm prune --production"
   },
   "engines": {
