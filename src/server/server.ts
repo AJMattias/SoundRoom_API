@@ -158,8 +158,8 @@ export class SoundRoomsServer {
             
             // ATENCIÓN: Las rutas estáticas con path locales (C:/...) NO funcionarán en Vercel.
             // Debes usar rutas relativas al proyecto. Por ahora las dejo, pero ten cuidado.
-            this._app.use('/uploads', express.static(path.resolve('uploads')));
-            this._app.use('/pdfs', express.static(path.join('pdfs'))); // Ajustado para ser relativo
+            //this._app.use('/uploads', express.static(path.resolve('uploads')));
+            //this._app.use('/pdfs', express.static(path.join('pdfs'))); // Ajustado para ser relativo
             // console.log('Serving static files from: ...'); // Remover logs de paths locales
 
             this._app.use('/image', imageRouter); 
