@@ -17,6 +17,7 @@ export const connect  = async () =>{
         {
            })
         mongoose.set('returnOriginal', false)
+        console.log('database connected')
     } catch (e){
         console.error("Error connecting to mongoose")
         console.error(e)
