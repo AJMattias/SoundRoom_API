@@ -338,57 +338,63 @@ export const route = (app: Application) => {
     )  
 
     //endpint with 1 image
-    app.post("/salasdeensayo_imagen/", multer.single('img'),
-    auth,
-    checkPermission(['CREAR_SALA_DE_ENSAYO']),
-    validator.body("nameSalaDeEnsayo").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
-    validator.body("calleDireccion").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
-    validator.body("numeroDireccion").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
-    validator.body("precioHora").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
-    validator.body("idType").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
-    //validator.body("idLocality").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
+    // app.post("/salasdeensayo_imagen/", multer.single('img'),
+    // auth,
+    // checkPermission(['CREAR_SALA_DE_ENSAYO']),
+    // validator.body("nameSalaDeEnsayo").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
+    // validator.body("calleDireccion").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
+    // validator.body("numeroDireccion").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
+    // validator.body("precioHora").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
+    // validator.body("idType").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
+    // //validator.body("idLocality").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
         
-        run(async ( req: Request, resp: Response) =>{
-            const errors = validator.validationResult(req)
-            if(errors && !errors.isEmpty()){
-                throw ValidatorUtils.toArgumentsException(errors.array())
-            }
-            const dto = req.body
-            //guardo imagen
-            const titulo = dto["titulo"]
-            const descripcion = dto["descripcionImg"]
-            const imageUrl = req.file?.path as string
-            const newImagen = {
-                titulo: titulo,
-                descripcion: descripcion, 
-                url: imageUrl,
-                public_id: 'lalala'
-            };
-            console.log("route image ", newImagen)
-            const newurl = `${process.env.APP_HOST}:${process.env.APP_PORT}/public/${req.file?.filename}`
-            console.log(newurl)
-            console.log("image name: ", req.file?.filename);
-            const imagen = await imageService.instance.createImagen(newImagen) 
-            console.log("id imagen: ", imagen.id)
-            //guardo sala de ensayo con el id de la imagen
-    
-            const sala = await service.instance.createSalaDeEnsayo({
-                nameSalaEnsayo: dto["nameSalaDeEnsayo"],
-                calleDireccion: dto["calleDireccion"],
-                precioHora: dto["precioHora"],
-                //idImagen: imagen.id,
-                idType: dto["idType"],
-                idOwner: dto["idOwner"],
-                duracionTurno: dto["duracionturno"],
-                descripcion: dto["descripcion"],
-                comodidades: dto["comodidades"],
-                imagenes: dto["imagenes"]
+    //     run(async ( req: Request, resp: Response) =>{
+    //         const errors = validator.validationResult(req)
+    //         if(errors && !errors.isEmpty()){
+    //             throw ValidatorUtils.toArgumentsException(errors.array())
+    //         }
+    //         const dto = req.body
 
-            })
-            resp.json(sala)
-          }
-        ) 
-    )
+    //         if (!req.file || !req.file.buffer) {
+    //           // Manejar error si no hay archivo
+    //           throw new Error("No se encontró el archivo de imagen en la petición.");
+    //         }
+
+    //         //guardo imagen
+    //         const titulo = dto["titulo"]
+    //         const descripcion = dto["descripcionImg"]
+    //         const imageUrl = req.file?.path as string
+    //         const newImagen = {
+    //             titulo: titulo,
+    //             descripcion: descripcion, 
+    //             url: imageUrl,
+    //             public_id: 'lalala'
+    //         };
+    //         console.log("route image ", newImagen)
+    //         const newurl = `${process.env.APP_HOST}:${process.env.APP_PORT}/public/${req.file?.filename}`
+    //         console.log(newurl)
+    //         console.log("image name: ", req.file?.filename);
+    //         const imagen = await imageService.instance.createImagen(newImagen) 
+    //         console.log("id imagen: ", imagen.id)
+    //         //guardo sala de ensayo con el id de la imagen
+    
+    //         const sala = await service.instance.createSalaDeEnsayo({
+    //             nameSalaEnsayo: dto["nameSalaDeEnsayo"],
+    //             calleDireccion: dto["calleDireccion"],
+    //             precioHora: dto["precioHora"],
+    //             //idImagen: imagen.id,
+    //             idType: dto["idType"],
+    //             idOwner: dto["idOwner"],
+    //             duracionTurno: dto["duracionturno"],
+    //             descripcion: dto["descripcion"],
+    //             comodidades: dto["comodidades"],
+    //             imagenes: dto["imagenes"]
+
+    //         })
+    //         resp.json(sala)
+    //       }
+    //     ) 
+    // )
 
     // app.put("/salasdeensayo/update/", 
     // auth,
