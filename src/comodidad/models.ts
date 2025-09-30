@@ -22,4 +22,4 @@ export const ComodidadSchema = new Schema({
     createdAt: Date
 });
 
-export const ComodidadModel = mongoose.model<ComodidadDoc>("Comodidad", ComodidadSchema)
+export const ComodidadModel = mongoose.model<any>("Comodidad", ComodidadSchema)

@@ -34,4 +34,4 @@ export const TempCodeSchema = new Schema({
     verificationCodeExpires: Date,
 })
 
-export const TempCodeModel = mongoose.model<TempCodeDoc>("TempCode", TempCodeSchema)
+export const TempCodeModel = mongoose.model<any>("TempCode", TempCodeSchema)

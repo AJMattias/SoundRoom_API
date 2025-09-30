@@ -50,7 +50,7 @@ export const ComisionSchema = new Schema({
     deletedAt: Date,
     enabled: String,
     enabledHistory: [EnabledHistorySchema],
-})
+} as any)
 
-export const EnabledHistoryModel = mongoose.model<EnabledHistoryDoc>("EnabledHistory", EnabledHistorySchema)
-export const ComisionModel = mongoose.model<ComisionDoc>("Comision", ComisionSchema)
+export const EnabledHistoryModel = mongoose.model<any>("EnabledHistory", EnabledHistorySchema)
+export const ComisionModel = mongoose.model<any>("Comision", ComisionSchema)

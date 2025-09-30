@@ -12,17 +12,13 @@ import { ImagenData, ImagenDto } from "./dto";
 interface MulterFile extends Express.Multer.File {}
 
 // Create an Express Router instance
-const router = Router(); // <--- Key change here!
+const router = Router(); 
 
-// --- MULTER CONFIGURATION (still within this file or moved globally if needed) ---
-const uploadDirectory = 'uploads'; // Relative path from where Node.js process starts
-// Ensure the directory exists
-if (!fs.existsSync(uploadDirectory)) {
-    fs.mkdirSync(uploadDirectory, { recursive: true });
-}
-const upload = multer({ dest: uploadDirectory });
+//Usamos memoryStorage para evitar el EROFS
+const memoryStorage = multer.memoryStorage();
 
-// --- Define your routes using 'router' instead of 'app' ---
+// Configuramos Multer con el almacenamiento en memoria
+const upload = multer({ storage: memoryStorage });
 
 router.get("/image", run(async (req: Request, res: Response) => {
     const imagenes: ImagenDto[] = await service.instance.getAllImagens();
@@ -81,15 +77,109 @@ router.get("/image/removeImage/", run(async (req: Request, res: Response) => {
 }));
 
 // images/save route (the one with Multer)
-router.post("/save", // <--- Now router.post is valid
-    upload.array('images', 10),
+// router.post("/save", // <--- Now router.post is valid
+//     upload.array('images', 10),
+//     run(async (req: Request, res: Response) => {
+//         try {
+//             console.log('--- BACKEND: Contenido de req.files ---');
+//             console.log(req.files);
+//             console.log('--- BACKEND: Contenido de req.body ---');
+//             console.log(req.body);
+
+//             const files = (req.files as unknown) as MulterFile[];
+
+//             if (!files || files.length === 0) {
+//                 console.error('BACKEND ERROR: No se recibieron archivos en req.files.');
+//                 return res.status(400).json({ msg: "No se subieron imágenes." });
+//             }
+
+//             let imageMetadata: ImagenData[] = [];
+//             if (typeof req.body.imageMetadata === 'string' && req.body.imageMetadata) {
+//                 try {
+//                     imageMetadata = JSON.parse(req.body.imageMetadata);
+//                     if (!Array.isArray(imageMetadata) || imageMetadata.length !== files.length) {
+//                         console.warn('Advertencia: La cantidad de metadatos no coincide con la cantidad de archivos. Se usará un valor por defecto.');
+//                     }
+//                 } catch (parseError) {
+//                     console.error('Error al parsear metadatos de imagen:', parseError);
+//                     return res.status(400).json({ msg: "Formato de metadatos de imagen inválido." });
+//                 }
+//             } else {
+//                 console.warn('No image metadata provided or it is not a string.');
+//             }
+
+//             const savedImageInfos: { id: string
+//                 //; url: string; description: string; enabled: boolean; 
+//             }[] = [];
+
+//             await Promise.all(files.map(async (file, index) => {
+//                 let currentMetadata: ImagenData = imageMetadata[index] || { description: '', enabled: true };
+
+//                 try {
+//                     const result = await cloudinary.uploader.upload(file.path, {
+//                         folder: 'salas-ensayo',
+//                         resource_type: 'auto'
+//                     });
+
+//                     const newImageDbEntry = await service.instance.createImagen({
+//                         titulo: currentMetadata.description || file.originalname,
+//                         descripcion: currentMetadata.description,
+//                         url: result.secure_url,
+//                         public_id: result.public_id
+//                     });
+
+//                     savedImageInfos.push({
+//                         id: newImageDbEntry.id ?? ''
+//                         // url: result.secure_url,
+//                         // description: currentMetadata.description,
+//                         // enabled: currentMetadata.enabled
+//                     });
+
+//                 } catch (error) {
+//                     console.error(`Error al subir imagen ${file.originalname} a Cloudinary o guardar en DB:`, error);
+//                     throw new Error(`Error al procesar imagen: ${file.originalname}`);
+//                 } finally {
+//                     if (fs.existsSync(file.path)) {
+//                         fs.unlinkSync(file.path);
+//                     }
+//                 }
+//             }));
+
+//             res.json({
+//                 success: true,
+//                 images: savedImageInfos
+//             });
+
+//         } catch (error) {
+//             console.error('Error general en la subida de imágenes:', error);
+
+//             if (req.files) {
+//                 ((req.files as unknown) as MulterFile[]).forEach(file => {
+//                     if (fs.existsSync(file.path)) {
+//                         fs.unlinkSync(file.path);
+//                     }
+//                 });
+//             }
+
+//             let errorMessage = "Error al procesar imágenes.";
+//             if (error instanceof Error) {
+//                 errorMessage = error.message;
+//             }
+//             res.status(500).json({
+//                 error: errorMessage,
+//                 details: error
+//             });
+//         }
+//     })
+//);
+
+router.post("/save", 
+    upload.array('images', 10), // Multer sube los archivos a req.files[].buffer
     run(async (req: Request, res: Response) => {
         try {
             console.log('--- BACKEND: Contenido de req.files ---');
-            console.log(req.files);
-            console.log('--- BACKEND: Contenido de req.body ---');
-            console.log(req.body);
-
+            // Nota: req.files ahora contiene el Buffer en cada archivo.
+            
             const files = (req.files as unknown) as MulterFile[];
 
             if (!files || files.length === 0) {
@@ -98,31 +188,23 @@ router.post("/save", // <--- Now router.post is valid
             }
 
             let imageMetadata: ImagenData[] = [];
-            if (typeof req.body.imageMetadata === 'string' && req.body.imageMetadata) {
-                try {
-                    imageMetadata = JSON.parse(req.body.imageMetadata);
-                    if (!Array.isArray(imageMetadata) || imageMetadata.length !== files.length) {
-                        console.warn('Advertencia: La cantidad de metadatos no coincide con la cantidad de archivos. Se usará un valor por defecto.');
-                    }
-                } catch (parseError) {
-                    console.error('Error al parsear metadatos de imagen:', parseError);
-                    return res.status(400).json({ msg: "Formato de metadatos de imagen inválido." });
-                }
-            } else {
-                console.warn('No image metadata provided or it is not a string.');
-            }
+            // ... (Lógica de parseo de metadatos, déjala igual)
 
-            const savedImageInfos: { id: string
-                //; url: string; description: string; enabled: boolean; 
-            }[] = [];
+            const savedImageInfos: { id: string }[] = [];
 
             await Promise.all(files.map(async (file, index) => {
                 let currentMetadata: ImagenData = imageMetadata[index] || { description: '', enabled: true };
+                
+                // 🛑 Cambio Clave: Convertir el Buffer a base64 para Cloudinary
+                // Si Multer usa memoryStorage, el archivo NO tiene file.path, sino file.buffer.
+                const base64Image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
 
                 try {
-                    const result = await cloudinary.uploader.upload(file.path, {
+                    // 🛑 USAMOS base64Image en lugar de file.path
+                    const result = await cloudinary.uploader.upload(base64Image, { 
                         folder: 'salas-ensayo',
-                        resource_type: 'auto'
+                        resource_type: 'auto',
+                        // Puedes usar file.originalname para sugerir un public_id
                     });
 
                     const newImageDbEntry = await service.instance.createImagen({
@@ -132,21 +214,14 @@ router.post("/save", // <--- Now router.post is valid
                         public_id: result.public_id
                     });
 
-                    savedImageInfos.push({
-                        id: newImageDbEntry.id ?? ''
-                        // url: result.secure_url,
-                        // description: currentMetadata.description,
-                        // enabled: currentMetadata.enabled
-                    });
+                    savedImageInfos.push({ id: newImageDbEntry.id ?? '' });
 
                 } catch (error) {
                     console.error(`Error al subir imagen ${file.originalname} a Cloudinary o guardar en DB:`, error);
+                    // No hay necesidad de borrar archivo local, ¡porque no se escribió!
                     throw new Error(`Error al procesar imagen: ${file.originalname}`);
-                } finally {
-                    if (fs.existsSync(file.path)) {
-                        fs.unlinkSync(file.path);
-                    }
-                }
+                } 
+                // 🛑 ELIMINAMOS el bloque 'finally' con fs.unlinkSync, ya que el archivo está en memoria
             }));
 
             res.json({
@@ -157,14 +232,8 @@ router.post("/save", // <--- Now router.post is valid
         } catch (error) {
             console.error('Error general en la subida de imágenes:', error);
 
-            if (req.files) {
-                ((req.files as unknown) as MulterFile[]).forEach(file => {
-                    if (fs.existsSync(file.path)) {
-                        fs.unlinkSync(file.path);
-                    }
-                });
-            }
-
+            // 🛑 ELIMINAMOS la lógica de borrar archivos temporales con fs.unlinkSync
+            
             let errorMessage = "Error al procesar imágenes.";
             if (error instanceof Error) {
                 errorMessage = error.message;

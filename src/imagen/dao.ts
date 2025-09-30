@@ -9,8 +9,8 @@ export class ImagenDao{
 
     //mapeo de imagenDoc a Imagen
     mapToImagen(document: ImagenDoc): Imagen{
-        return{
-            id: document._id,
+        return {
+            id: document._id as unknown as string,
             url: document.url,
             titulo: document.titulo,
             descripcion: document.descripcion,
@@ -68,7 +68,7 @@ export class ImagenDao{
 }
 
     async findById(id: string):Promise<Imagen>{
-        const _id = mongoose.Types.ObjectId(id)
+        const _id = new mongoose.Types.ObjectId(id)
         const model = await ImagenModel.findById({_id}).exec()
         if(!model) throw new ModelNotFoundException()
         return this.mapToImagen(model)
@@ -105,7 +105,7 @@ export class ImagenDao{
     }
 
     async removeImage(id: string): Promise<boolean>{
-        const imagen = await ImagenModel.findByIdAndRemove(id)
+        const imagen = await ImagenModel.findOneAndDelete({ _id: id })
         if(imagen){
             return true
         }else{

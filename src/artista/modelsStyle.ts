@@ -34,4 +34,4 @@ export const ArtistStyleSchema = new Schema({
     },
 })
 
-export const ArtistStyleModel = mongoose.model<ArtistStyleDoc>("ArtistStyle", ArtistStyleSchema)
+export const ArtistStyleModel = mongoose.model<any>("ArtistStyle", ArtistStyleSchema)

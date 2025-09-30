@@ -14,7 +14,7 @@ export async function generateReporteBarChartExample(labels, data) {
     const backgroundColour = 'white'
     const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height, backgroundColour });
 
-    const data = {
+    const chartData = {
         type: 'bar',
         data: {
             labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
@@ -49,7 +49,7 @@ export async function generateReporteBarChartExample(labels, data) {
         }
     };
 
-    const chartImage = await chartJSNodeCanvas.renderToBuffer(data);
+    const chartImage = await chartJSNodeCanvas.renderToBuffer(chartData);
 
     return chartImage;
 }
@@ -69,7 +69,7 @@ export async function generateReporteBarChart(labels, datas, label) {
     const backgroundColour = 'white'
     const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height, backgroundColour });
 
-    const data = {
+    const chartConfig = {
         type: 'bar',
         data: {
             labels: labels,
@@ -103,7 +103,7 @@ export async function generateReporteBarChart(labels, datas, label) {
         }
     };
 
-    const chartImage = await chartJSNodeCanvas.renderToBuffer(data);
+    const chartImage = await chartJSNodeCanvas.renderToBuffer(chartConfig);
     
     return chartImage;
 }
@@ -124,7 +124,7 @@ export async function generateReportePieChart(labels, datas, label) {
     const backgroundColour = 'white'
     const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height, backgroundColour });
 
-    const data = {
+    const pieChartConfig = {
         type: 'pie',
         data: {
             labels: labels,
@@ -153,7 +153,7 @@ export async function generateReportePieChart(labels, datas, label) {
         }
     };
 
-    const chartImage = await chartJSNodeCanvas.renderToBuffer(data);
+    const chartImage = await chartJSNodeCanvas.renderToBuffer(pieChartConfig);
 
     return chartImage;
 }

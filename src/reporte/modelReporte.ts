@@ -21,4 +21,4 @@ export const ReportesSchema = new Schema({
     cantidad: Number
 })
 
-export const ReportesModel = mongoose.model<ReportesDoc>("Reportes", ReportesSchema)
+export const ReportesModel = mongoose.model<any>("Reportes", ReportesSchema)

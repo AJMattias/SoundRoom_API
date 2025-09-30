@@ -54,4 +54,4 @@ export const ReservationSchema = new Schema({
         ref:"Sala_De_Ensayo"},
 })
 
-export const ReservationModel = mongoose.model<ReservationDoc>("Reservation", ReservationSchema)
+export const ReservationModel = mongoose.model<any>("Reservation", ReservationSchema)

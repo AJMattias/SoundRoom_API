@@ -29,4 +29,4 @@ export const LocalitySchema = new Schema({
     },
 })
 
-export const LocalityModel = mongoose.model<LocalityDoc>("Locality", LocalitySchema)
+export const LocalityModel = mongoose.model<any>("Locality", LocalitySchema)

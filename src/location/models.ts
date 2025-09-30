@@ -20,8 +20,8 @@ export interface ProvinceDoc extends Document {
 
 /**
  *  Definicion de la "tabla" en Mongoose de  User.  No queremos hacer nada raro con ella, simplemente define los tipos de los campos.
- *  No nos interesa añadir lógica de negocio (por ejemplo validar campos) acá, porque eso sería acoplar las responsabilidades de una clase  
- *  que sólo debe encargarse de persistencia. Tampoco hay que meter búsquedas de BBDD ni nada parecido en los schemas. 
+ *  No nos interesa aï¿½adir lï¿½gica de negocio (por ejemplo validar campos) acï¿½, porque eso serï¿½a acoplar las responsabilidades de una clase  
+ *  que sï¿½lo debe encargarse de persistencia. Tampoco hay que meter bï¿½squedas de BBDD ni nada parecido en los schemas. 
  * 
  */
 export const ProvinceSchema = new Schema({
@@ -34,5 +34,5 @@ export const ProvinceSchema = new Schema({
 
 
 
-export const ProvinceModel = mongoose.model<ProvinceDoc>("Province", ProvinceSchema)
+export const ProvinceModel = mongoose.model<any>("Province", ProvinceSchema)
 

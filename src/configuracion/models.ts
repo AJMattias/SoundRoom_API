@@ -29,4 +29,4 @@ export const ConfiguracionSchema = new Schema({
     deletedAt: Date
 });
 
-export const ConfiguracionModel = mongoose.model<ConfiguracionDoc>("Configuracion", ConfiguracionSchema)
+export const ConfiguracionModel = mongoose.model<any>("Configuracion", ConfiguracionSchema)

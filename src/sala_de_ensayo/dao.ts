@@ -83,7 +83,7 @@ async getSearch(sala: CreateSearchSdEDto):Promise<Array<SalaDeEnsayo>>{
     return(await SalaDeEnsayoModel.find({
         idType: mongoose.Types.ObjectId(sala.idType), 
         //idLocality: mongoose.Types.ObjectId(sala.idLocality)
-    }, {enabled: 'habilitado'}).exec())
+      }, {enabled: 'habilitado'} as any).exec())
     .map((doc:SalaDeEnsayoDoc)=>{
         return this.mapToSalaDeEnsayo(doc)
     })
