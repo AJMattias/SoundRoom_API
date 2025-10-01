@@ -167,6 +167,6 @@ export class SoundRoomsServer {
 
     // ... (Tu método _startEngines es correcto) ...
     async _startEngines() : Promise<void> {
-        return await db.connect()
+        await db.connect()
     }
 }
