@@ -470,7 +470,7 @@ async getOpinionById( opinionId: string): Promise<Opinion>{
 // bug: mongoose: To create a new ObjectId please try `Mongoose.Types.ObjectId` ->
 // instead of using `Mongoose.Schema.ObjectId`
 async getOpinionToArtist( artistId: string): Promise<Array<Opinion>>{
-    const idArtist = mongoose.Types.ObjectId(artistId);
+    const idArtist = new mongoose.Types.ObjectId(artistId);
     return (await OpinionModel.find({idArtist: idArtist}).populate("idUser").exec())
     .map((doc: OpinionDoc)=>{
         return this.mapToOpinion(doc)
