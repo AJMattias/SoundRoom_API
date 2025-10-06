@@ -42,6 +42,19 @@ export class SalaDeEnsayoDto{
     }
 }
 
+export interface PaginatedResponseDto<T> {
+    page: number; // Página actual
+    limit: number; // Límite de resultados por página
+    total: number; // Total de resultados coincidentes (sin paginar)
+    data: T[]; // El array de resultados (SalaDeEnsayoDto[])
+}
+
+// Definición para el DAO, ya que trabaja con entidades de dominio (SalaDeEnsayo)
+type DaoPaginationResult = { 
+    data: Array<SalaDeEnsayo>; // Entidades de dominio sin mapear a DTO
+    total: number;
+};
+
 export interface UpdateSalaDeEnsayoDto2{
     nameSalaEnsayo?: string,
     calleDireccion?: string,

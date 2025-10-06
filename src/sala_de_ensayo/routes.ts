@@ -2,7 +2,7 @@
 import * as validator from "express-validator"
 import { run } from "../common/utils/run";
 import { Application, Request, Response } from "express";
-import { OpinionDto, SalaDeEnsayoDto} from "./dto";
+import { OpinionDto, PaginatedResponseDto, SalaDeEnsayoDto} from "./dto";
 import {ErrorCode} from "../common/utils/constants"
 import {OpinionModel, SalaDeEnsayoDoc, SalaDeEnsayoModel } from "./model";
 import {ValidatorUtils} from "../common/utils/validator_utils"
@@ -25,6 +25,9 @@ import fs from 'fs-extra';
  */
 
 export const route = (app: Application) => {
+
+  const DEFAULT_PAGE = 1;
+  const DEFAULT_LIMIT = 10; // Un buen valor por defecto
 
     app.get("/salasdeensayo/", run(async (req: Request, resp: Response) => {
         const salas : SalaDeEnsayoDto[] = await  service.instance.getAll()
@@ -73,16 +76,62 @@ export const route = (app: Application) => {
    
     //Buscar Sala de ensayo
     app.get("/salasdeensayo/findByName/",
-        auth,
-        checkPermission(['BUSCAR_SALA_DE_ENSAYO']),
-        run(async (req: Request, resp: Response) => {
-        const busqueda = req.query.q
-        console.log('req.query.q: ', req.query.q)
-        console.log(busqueda)
-        const salas : SalaDeEnsayoDto[] = await service.instance.findByName(req.query.q as string)
-        resp.json(salas)    
+      auth,
+      checkPermission(['BUSCAR_SALA_DE_ENSAYO']),
+      run(async (req: Request, resp: Response) => {
+      const busqueda = req.query.q;
+
+      // VALIDACIÓN CRÍTICA: Asegúrate de que 'q' es una cadena
+      if (typeof busqueda !== 'string' || busqueda.trim() === '') {
+          // Podrías devolver un 400 Bad Request o simplemente un array vacío si es permisivo
+          return resp.status(400).json({ error: "El parámetro de búsqueda 'q' es obligatorio." });
+      }
+      console.log('Ruta: Buscando por:', busqueda);
+      // Ahora pasas la cadena validada
+      const salas : SalaDeEnsayoDto[] = await service.instance.findByName(busqueda); 
+
+      console.log('Ruta: Salas buscadas por nombre:', salas); // Este CLG debería verse
+      resp.json(salas);    
     }))
     
+  
+
+ app.get("/salasdeensayo/findByNamePaginated/",
+    auth,
+    checkPermission(['BUSCAR_SALA_DE_ENSAYO']),
+    run(async (req: Request, resp: Response) => {
+        
+        const busqueda = req.query.q as string;
+        
+        // --- 1. Obtener y validar Parámetros de Paginación ---
+        
+        // Convertir page y limit a números, asignando valores por defecto si no existen
+        const page = parseInt(req.query.page as string) || DEFAULT_PAGE;
+        const limit = parseInt(req.query.limit as string) || DEFAULT_LIMIT;
+
+        // Validación básica
+        if (page <= 0 || limit <= 0) {
+            return resp.status(400).json({ error: "Los parámetros 'page' y 'limit' deben ser números positivos." });
+        }
+
+        // --- 2. Validar Parámetro de Búsqueda ---
+        
+        if (typeof busqueda !== 'string' || busqueda.trim() === '') {
+            return resp.status(400).json({ error: "El parámetro de búsqueda 'q' es obligatorio." });
+        }
+        
+        // --- 3. Llamada al Servicio con Paginación ---
+        
+        console.log(`Ruta: Buscando por: ${busqueda}, Page: ${page}, Limit: ${limit}`);
+
+        // El servicio ya devuelve el objeto completo {page, limit, total, data: []}
+        const salasPaginated: PaginatedResponseDto<SalaDeEnsayoDto> = 
+            await service.instance.findByNamePaginated(busqueda.trim(), page, limit);
+
+        // 4. Devolver la respuesta completa (ya está en el formato correcto)
+        resp.json(salasPaginated); 
+    })
+);
 
     //TODO findbyOwner
     app.get("/salasdeensayo/findByOwner/",
