@@ -13,6 +13,18 @@ import { filterUndefined } from "../common/utils/object-utils";
 
 var mongoose = require('mongoose');
 
+export interface PaginatedResponseDto<T> {
+    page: number;
+    limit: number;
+    total: number;
+    data: T[]; // T será SalaDeEnsayoDto
+}
+
+type DaoPaginationResult = { 
+    data: Array<SalaDeEnsayo>; // Entidades de dominio sin mapear a DTO
+    total: number;
+};
+
 export class SalaDeEnsayoDao{
 
 async getAll():Promise<Array<SalaDeEnsayo>>{
@@ -72,11 +84,54 @@ async findByName(query: string): Promise<Array<SalaDeEnsayo>> {
 */
 
 async findByName(query: string): Promise<Array<SalaDeEnsayo>> {
-    return(await SalaDeEnsayoModel.find({nameSalaEnsayo: { $regex: query, $options: 'i' } , enabled: 'habilitado'}).populate("idOwner").exec())
+    const docs = await SalaDeEnsayoModel.find(
+        {
+            nameSalaEnsayo: { $regex: query, $options: 'i' } , 
+            enabled: 'habilitado'})
+            .populate("idOwner")
+            .lean()
+            .exec()
     // return(await SalaDeEnsayoModel.find({$text : { $search : query }}, {enabled: true}).exec())
-    .map((doc:SalaDeEnsayoDoc)=>{
-        return this.mapToSalaDeEnsayo(doc)
+    console.log('salas encontradas: ', docs)
+    return docs.map((doc: any) => {
+        return this.mapToSalaDeEnsayo(doc as any)
     })
+}
+
+async findByNameAndPaginate(
+    query: string,
+    page: number,
+    limit: number
+): Promise<DaoPaginationResult> {
+    
+    // 1. Calcular el desplazamiento (offset)
+    const skip = (page - 1) * limit;
+
+    // 2. Definir la query de filtro (la usamos para el conteo y la búsqueda)
+    const filterQuery = {
+        nameSalaEnsayo: { $regex: query, $options: 'i' }, 
+        enabled: 'habilitado'
+    };
+    
+    // 3. Obtener el total de documentos que coinciden (SIN PAGINAR)
+    const total = await SalaDeEnsayoModel.countDocuments(filterQuery);
+    
+    // 4. Obtener los documentos paginados
+    const docs = await SalaDeEnsayoModel.find(filterQuery)
+        .populate("idOwner")
+        .skip(skip)
+        .limit(limit)
+        .lean()
+        .exec();
+
+    // 5. Mapear los documentos de Mongoose a tu entidad de dominio (SalaDeEnsayo)
+    const data = docs.map((doc: any) => {
+        // Usamos la función base para mapear UNA Sala
+        return this.mapToSalaDeEnsayo(doc as any);
+    });
+
+    // 6. Devolver el objeto con los datos y el total
+    return { data, total };
 }
 
 async getSearch(sala: CreateSearchSdEDto):Promise<Array<SalaDeEnsayo>>{
@@ -394,7 +449,32 @@ mapToSalaDeEnsayo(document: SalaDeEnsayoDoc): SalaDeEnsayo {
         horarios: document.horarios
 
     }
-} 
+}
+
+mapToSalaDeEnsayoPaginated(document: SalaDeEnsayoDoc, total:number): any {
+    return{
+        total:total,
+        id: document._id as unknown as string,
+        nameSalaEnsayo: document.nameSalaEnsayo,
+        calleDireccion: document.calleDireccion,
+        precioHora: document.precioHora, 
+        numeroDireccion: document.numeroDireccion,
+        imagenes:document.imagenes,
+        idOwner: document.idOwner as unknown as string,
+        duracionTurno: document.duracionTurno,
+        createdAt: document.createdAt,
+        idLocality: document.idLocality as unknown as string,
+        idType: document.idType as unknown as string,
+        deletedAt: document.deletedAt,
+        enabled: document.enabled,
+        descripcion: document.descripcion,
+        comodidades:  document.comodidades,
+        opiniones: document.opiniones,
+        enabledHistory: document.enabledHistory,
+        horarios: document.horarios
+
+    }
+}
 
 // Document opinion de sala de ensayo
 

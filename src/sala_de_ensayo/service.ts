@@ -22,6 +22,11 @@ export interface CreateSalaDeEnsayoDto{
     horarios?:[]
 }
 
+export interface BuscarSalaDeEnsayoPaginatedDto{
+    total: number,
+    data: SalaDeEnsayoDto
+}
+
 
 export class SalaService{
 
@@ -32,11 +37,43 @@ export class SalaService{
     
 
     async findByName(nombre: string): Promise<Array<SalaDeEnsayoDto>>{
+        console.log('service buscar sala por nombre recibido: ', nombre)
         const salas = await this.dao.findByName(nombre)
+        console.log('service buscar sala por nombre: ', salas)
         return salas.map((sala: SalaDeEnsayo) =>{
             return this.mapToDto(sala)
         })
     }
+
+   async findByNamePaginated(
+    nombre: string,
+    page: number,
+    limit: number
+): Promise<dao.PaginatedResponseDto<SalaDeEnsayoDto>> { 
+    
+    console.log('Service buscando sala por nombre, página:', page, 'límite:', limit);
+    
+    // 1. Llamar al DAO y desestructurar el resultado
+    const { 
+        data: salasEncontradas, // Array de SalaDeEnsayo (entidad de dominio)
+        total 
+    } = await this.dao.findByNameAndPaginate(nombre, page, limit); 
+    
+    // 2. Mapear las entidades de dominio a DTOs
+    const dataDTO = salasEncontradas.map((sala: SalaDeEnsayo) => {
+        return this.mapToDto(sala) // Mapeo a SalaDeEnsayoDto
+    });
+
+    // 3. Construir y devolver el objeto de respuesta paginado (PaginatedResponseDto)
+    const response: dao.PaginatedResponseDto<SalaDeEnsayoDto> = {
+        page,
+        limit,
+        total,
+        data: dataDTO, // Array de DTOs mapeados
+    };
+    
+    return response;
+}
 
     /*
 
@@ -391,7 +428,29 @@ export class SalaService{
         return nombresDeMeses[mes];
     }
 
+    mapToSalaDeEnsayoPaginated(document: any): any {
+        return{
+            id: document.id,
+            nameSalaEnsayo: document.nameSalaEnsayo,
+            calleDireccion: document.calleDireccion,
+            precioHora: document.precioHora, 
+            numeroDireccion: document.numeroDireccion,
+            imagenes:document.imagenes,
+            idOwner: document.idOwner as unknown as string,
+            duracionTurno: document.duracionTurno,
+            createdAt: document.createdAt,
+            idLocality: document.idLocality as unknown as string,
+            idType: document.idType as unknown as string,
+            deletedAt: document.deletedAt,
+            enabled: document.enabled,
+            descripcion: document.descripcion,
+            comodidades:  document.comodidades,
+            opiniones: document.opiniones,
+            enabledHistory: document.enabledHistory,
+            horarios: document.horarios
     
+        }
+    }
 
     mapToDto(sala: SalaDeEnsayo): SalaDeEnsayoDto{
         return{
