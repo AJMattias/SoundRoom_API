@@ -63,7 +63,13 @@ async findById2(salaEnsayoId: string): Promise<SalaDeEnsayo>{
     const model = await SalaDeEnsayoModel.findOne({_id: salaEnsayoId 
         //, enabled: 'habilitado'
     })
-    .populate("idOwner").populate("imagenes").populate({
+    .populate("idOwner")
+        .populate({
+            path: 'imagenes',
+            select: 'url titulo',
+            model: 'Imagen'
+        })
+        .populate({
         path: 'opiniones', // Popula el array de opiniones
         populate: {
             path: 'idUser', // Dentro de cada opinión, popula el campo 'idUser'
