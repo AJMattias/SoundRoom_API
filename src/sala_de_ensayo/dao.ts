@@ -64,17 +64,17 @@ async findById2(salaEnsayoId: string): Promise<SalaDeEnsayo>{
         //, enabled: 'habilitado'
     })
     .populate("idOwner")
-        .populate({
-            path: 'imagenes',
-            select: 'url titulo',
-            model: 'Imagen'
-        })
-        .populate({
-        path: 'opiniones', // Popula el array de opiniones
-        populate: {
-            path: 'idUser', // Dentro de cada opinión, popula el campo 'idUser'
-            select: '_id name lastName imageId' // Selecciona solo los campos '_id 'name' y 'imageId' del usuario
-        }
+    .populate({
+        path: 'imagenes',
+        select: 'url titulo',
+        model: 'Imagen'
+    })
+    .populate({
+    path: 'opiniones', // Popula el array de opiniones
+    populate: {
+        path: 'idUser', // Dentro de cada opinión, popula el campo 'idUser'
+        select: '_id name lastName imageId' // Selecciona solo los campos '_id 'name' y 'imageId' del usuario
+    }
     })
     .exec()
     if(!model) throw new ModelNotFoundException()
@@ -157,7 +157,7 @@ async getSearch(sala: CreateSearchSdEDto):Promise<Array<SalaDeEnsayo>>{
 
 
 async getByOwner(idOwner: string):Promise<Array<SalaDeEnsayo>>{  
-    const sala = await SalaDeEnsayoModel.find({idOwner: mongoose.Types.ObjectId(idOwner)})
+    const sala = await SalaDeEnsayoModel.find({idOwner: new mongoose.Types.ObjectId(idOwner)})
         .populate("imagenes")
         .populate({
             path: "opiniones",
