@@ -119,7 +119,11 @@ async findByNameAndPaginate(
     // 4. Obtener los documentos paginados
     const docs = await SalaDeEnsayoModel.find(filterQuery)
         .populate("idOwner")
-        .populate("imagenes", 'url titulo')
+        .populate({
+            path: 'imagenes',
+            select: 'url titulo',
+            model: 'Imagen'
+        })
         .skip(skip)
         .limit(limit)
         .lean()
