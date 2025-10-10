@@ -4,6 +4,7 @@ node_modules/*
 .DS_Store
 ../.DS_Store
 built/*
+dist/*
 .vs
 .vs/*
 package-lock.json
