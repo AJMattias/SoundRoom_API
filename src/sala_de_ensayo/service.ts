@@ -152,13 +152,11 @@ export class SalaService{
 
     async findSalaById(id: string): Promise<SalaDeEnsayoDto>{
         const sala = await this.dao.findById2(id)
-        console.log("service get sala encontrada id: ", id)
         return this.mapToDto(sala)
     }
 
     async findSalaByOwner(idOwner: string): Promise<Array<SalaDeEnsayoDto>>{
         const salas = await this.dao.getByOwner(idOwner)
-        console.log('service salas, salas by user: ', salas)
         return salas.map((sala: SalaDeEnsayo)=>{
             return this.mapToDto(sala)
         })

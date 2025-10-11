@@ -100,7 +100,7 @@ export const SalaDeEnsayoSchema = new Schema({
     },
    
     imagenes:[{
-        type: [Schema.Types.ObjectId],
+        type: Schema.Types.ObjectId,
         ref: "Imagen",
         default:[]
     }],
