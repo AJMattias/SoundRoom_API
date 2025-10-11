@@ -4,7 +4,7 @@ import { Opinion, OpinionDoc, OpinionModel, SalaDeEnsayo, SalaDeEnsayoDoc, SalaD
 import {StringUtils} from "../common/utils/string_utils";
 import { Mongoose, ObjectId } from "mongoose"
 import { Types } from 'mongoose';
-import { ImagenDoc } from "../imagen/model";
+import { ImagenDoc, ImagenModel } from "../imagen/model";
 import { ImagenDto } from "../imagen/dto";
 import { UpdateImageDto } from "../sala_de_ensayo/dto";
 import { filterUndefined } from "../common/utils/object-utils";
@@ -51,43 +51,36 @@ async findById(salaEnsayoId: string): Promise<SalaDeEnsayo>{
     const model = await SalaDeEnsayoModel.findById(salaEnsayoId)
     .populate("imagenes").populate("idOwner").exec()
     if(!model) throw new ModelNotFoundException()
-    console.log('dao get sala: ', model)
     return this.mapToSalaDeEnsayo(model)
 }
 
-async findById2(salaEnsayoId: string): Promise<SalaDeEnsayo>{
-    console.log('findById2')
+
+async findById2(salaEnsayoId: string): Promise<SalaDeEnsayo> {
+    
     if (!mongoose.Types.ObjectId.isValid(salaEnsayoId)) {
         throw new Error('ID de documento no válido');
     }
-    const model = await SalaDeEnsayoModel.findOne({_id: salaEnsayoId 
-        //, enabled: 'habilitado'
-    })
-    .populate("idOwner")
-    .populate({
-        path: 'imagenes',
-        select: 'url titulo',
-        model: 'Imagen'
-    })
-    .populate({
-    path: 'opiniones', // Popula el array de opiniones
-    populate: {
-        path: 'idUser', // Dentro de cada opinión, popula el campo 'idUser'
-        select: '_id name lastName imageId' // Selecciona solo los campos '_id 'name' y 'imageId' del usuario
-    }
-    })
-    .exec()
-    if(!model) throw new ModelNotFoundException()
-    console.log('dao get sala id: ', salaEnsayoId)
-    return this.mapToSalaDeEnsayo(model)
-}
 
-/*<<
-async findByName(query: string): Promise<Array<SalaDeEnsayo>> {
-    const models = await SalaDeEnsayoModel.find({$text : { $search : query }}).exec()
-    return models.map((model:SalaDeEnsayoDoc) => this.mapToSalaDeEnsayo(model))
+    const model = await SalaDeEnsayoModel.findOne({ _id: salaEnsayoId })
+        .populate("idOwner")
+        .populate({
+            path: 'imagenes',
+            select: 'url titulo descripcion'
+        })
+        .populate({
+            path: 'opiniones',
+            populate: {
+                path: 'idUser',
+                select: '_id name lastName imageId'
+            }
+        })
+        .exec();
+    
+    if (!model) throw new ModelNotFoundException();
+
+    const result = this.mapToSalaDeEnsayo(model);
+    return result;
 }
-*/
 
 async findByName(query: string): Promise<Array<SalaDeEnsayo>> {
     const docs = await SalaDeEnsayoModel.find(
@@ -98,7 +91,6 @@ async findByName(query: string): Promise<Array<SalaDeEnsayo>> {
             .lean()
             .exec()
     // return(await SalaDeEnsayoModel.find({$text : { $search : query }}, {enabled: true}).exec())
-    console.log('salas encontradas: ', docs)
     return docs.map((doc: any) => {
         return this.mapToSalaDeEnsayo(doc as any)
     })
@@ -140,7 +132,6 @@ async findByNameAndPaginate(
         // Usamos la función base para mapear UNA Sala
         return this.mapToSalaDeEnsayo(doc as any);
     });
-
     // 6. Devolver el objeto con los datos y el total
     return { data, total };
 }
@@ -166,7 +157,6 @@ async getByOwner(idOwner: string):Promise<Array<SalaDeEnsayo>>{
                 model: "User" // Asegúrate de que este es el nombre de tu modelo de usuario
             }
         }).exec()
-    console.log('salas dao by owner: ', sala)
     return(sala.map((doc:SalaDeEnsayoDoc)=>{
         return this.mapToSalaDeEnsayoImagen(doc)
     }))
@@ -445,7 +435,7 @@ mapToSalaDeEnsayo(document: SalaDeEnsayoDoc): SalaDeEnsayo {
         calleDireccion: document.calleDireccion,
         precioHora: document.precioHora, 
         numeroDireccion: document.numeroDireccion,
-        imagenes:document.imagenes,
+        imagenes:document.imagenes || [],
         idOwner: document.idOwner as unknown as string,
         duracionTurno: document.duracionTurno,
         createdAt: document.createdAt,

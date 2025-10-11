@@ -40,23 +40,6 @@ export const route = (app: Application) => {
         run(async (req:Request, resp: Response) => {
             const id = req.query.id as string
             const sala : SalaDeEnsayoDto = await service.instance.findSalaById(id);
-            
-            // const opinionesIds = sala.opiniones;
-            // const opiniones = await OpinionModel.find({ _id: { $in: opinionesIds } });
-
-            // const totalEstrellas = opiniones.reduce((total, opinion) => total + opinion.estrellas, 0);
-            // const promedio = totalEstrellas / opiniones.length;
-            // let salaResp={
-            //     sala: sala,
-            //     promedioEstrellas: promedio
-            // }
-            // if (opiniones.length === 0) {
-            //     salaResp.promedioEstrellas = 0
-            //   } else {
-            //     salaResp.promedioEstrellas = promedio
-            //   }
-            // console.log(sala)
-            
             resp.json(sala)
     }))
     
