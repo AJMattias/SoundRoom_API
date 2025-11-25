@@ -2,7 +2,7 @@ import { Application, Request, Response } from "express";
 import { run } from "../common/utils/run";
 import { admin, auth } from "../server/middleware";
 import * as service from "./service"
-import { ReservationDto } from "./dto";
+import { ReservationDto, ReservationHsDto } from "./dto";
 import * as validator from "express-validator"
 import {ErrorCode} from "../common/utils/constants"
 import { ValidatorUtils } from "../common/utils/validator_utils";
@@ -21,6 +21,15 @@ export const route = (app: Application) =>{
         auth,
         run( async(req: any, res: Response)=>{
             const reservations: ReservationDto[] = await service.instance.getAll()
+            res.json(reservations)
+    }))
+
+    app.get("/reservationsDateHs/",
+        auth,
+        run( async(req: any, res: Response)=>{
+            const idRoom = req.query.idRoom as string
+            const date = req.query.date
+            const reservations: ReservationHsDto[] = await service.instance.getByRoomyDate(idRoom, date)
             res.json(reservations)
     }))
 

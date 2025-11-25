@@ -22,7 +22,9 @@ export class ReservationDao{
             canceled: document.canceled,
             date: document.date,
             totalPrice: document.totalPrice,
-            canceledDate: document.canceledDate
+            canceledDate: document.canceledDate,
+            paymentDate: document.paymentDate,
+            paymentStatus: document.paymentStatus,
         };
     }
     
@@ -132,6 +134,7 @@ export class ReservationDao{
         }
         )
     }
+
     async getByRoomCanceled(roomId: string): Promise<Array<Reservation>>{
         return (await ReservationModel.find({canceled: "true", idRoom: roomId}).exec())
         .map((doc: ReservationDoc)=>{
@@ -195,6 +198,12 @@ export class ReservationDao{
         return this.mapToReservation(updated)
     }
 
+    async delete(reservaId: string):Promise<any>{
+        const deleted = await ReservationModel.findByIdAndDelete(reservaId).exec()
+        if (!deleted) throw new ModelNotFoundException()
+        return true
+    }
+
     async obtenerArtistasNuevosPorMes(fechaInicio: string, fechaFin: string): Promise<{ mes: string, cantidad: number }[]> {
         try {
             // Parsear fechas
@@ -233,6 +242,19 @@ export class ReservationDao{
             throw error;
         }
     }
+
+    async getByRoomyDate(roomId: string, date:Date): Promise<Array<Reservation>>{
+        return (await ReservationModel.find({
+            canceled: "false", 
+            idRoom: roomId,
+            date: date
+        }).exec())
+        .map((doc: ReservationDoc)=>{
+            return this.mapToReservation(doc)
+        }
+        )
+    }
+
     // helper parsea
     obtenerNombreDelMes = (mes: number): string => {
         const nombresDeMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];

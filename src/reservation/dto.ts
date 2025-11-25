@@ -45,6 +45,20 @@ export interface CreateReservationDto{
     canceledDate?: Date;
 }
 
+export interface CreateReservaDto{
+    createdAt?: Date;
+    deletedAt?:Date;
+    idRoom: string;
+    idOwner: string;
+    idUser: string;
+    hsStart: string;
+    hsEnd: string;
+    canceled: string;
+    date: Date;
+    totalPrice: number;
+    canceledDate?: Date;
+}
+
 export interface DeleteReservationDto{
     createdAt: Date;
     deletedAt:Date;
@@ -57,4 +71,14 @@ export interface DeleteReservationDto{
     date: Date;
     totalPrice: number;
     canceledDate?: Date;
+}
+
+export interface ReservationHsDto{
+    id: string;
+    hsStart: string;
+    hsEnd: string;
+    idRoom: string;
+    date: Date;
+    totalPrice: number;
+
 }

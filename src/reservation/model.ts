@@ -18,7 +18,10 @@ export interface Reservation{
     canceledDate: Date,
     canceled: string,
     date: Date,
-    totalPrice: number
+    totalPrice: number,
+    paymentStatus: 'CREADA' | 'PENDIENTE' | 'PAGADA' | 'RECHAZADA' | 'CANCELADA',
+    paymentDate: Date
+
 ,}
 
 export interface ReservationDoc extends Document{
@@ -33,7 +36,9 @@ export interface ReservationDoc extends Document{
     canceledDate: Date,
     canceled: string,
     date: Date,
-    totalPrice: number
+    totalPrice: number,
+    paymentStatus: 'CREADA' | 'PENDIENTE' | 'PAGADA' | 'RECHAZADA' | 'CANCELADA',
+    paymentDate: Date
 }
 
 export const ReservationSchema = new Schema({
@@ -45,7 +50,8 @@ export const ReservationSchema = new Schema({
     totalPrice: Number,
     canceled: String,
     canceledDate: Date,
-    //TODO agregar canceledDate: Date. Idem a docs, reservation, y dtos
+    payment_status: String,
+    paymentDate: Date,
     idOwner: {type: Schema.Types.ObjectId,
         ref:"User"},
     idUser: {type: Schema.Types.ObjectId,
