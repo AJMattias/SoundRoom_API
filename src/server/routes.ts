@@ -21,6 +21,8 @@
  import * as imagen from "../imagen/routes"
  import * as reservation from "../reservation/routes"
  import * as pago from "../pago/routes"
+ import * as pagoMP from "../pagoMP/routes"
+ 
  
 export const routes = (app : express.Application) => {
 
@@ -53,5 +55,6 @@ export const routes = (app : express.Application) => {
     //imagen.route(app)
     reservation.route(app)
     pago.route(app)
+    pagoMP.route(app)    
 
 }

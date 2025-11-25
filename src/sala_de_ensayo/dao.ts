@@ -61,7 +61,11 @@ async findById2(salaEnsayoId: string): Promise<SalaDeEnsayo> {
         throw new Error('ID de documento no válido');
     }
 
-    const model = await SalaDeEnsayoModel.findOne({ _id: salaEnsayoId })
+    const model = await SalaDeEnsayoModel.findOne(
+        { 
+        _id: salaEnsayoId,
+        enabled:"habilitado"
+        })
         .populate("idOwner")
         .populate({
             path: 'imagenes',

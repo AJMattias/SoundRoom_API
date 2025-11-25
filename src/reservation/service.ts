@@ -1,6 +1,6 @@
 import  * as dao from "./dao"
 import {AuthenticationException, AuthorizationException, ServerException} from "../common/exception/exception"
-import { CreateReservationDto, DeleteReservationDto, ReservationDto } from "./dto";
+import { CreateReservationDto, DeleteReservationDto, ReservationDto, ReservationHsDto } from "./dto";
 import { Reservation, ReservationModel } from "./model";
 import * as Email from "../server/MailCtrl"
 import { User, UserModel } from "../users/models"
@@ -171,6 +171,28 @@ export class ReservationService{
         return reservations.map((reservation: Reservation) => {
             return this.mapToDto(reservation)
         })
+    }
+
+    mapToReservation(document: ReservationDto): ReservationHsDto{
+            return{
+                hsStart: document.hsStart,
+                hsEnd: document.hsEnd,
+                idRoom: document.idRoom,
+                id: document.id,
+                date: document.date,
+                totalPrice: document.totalPrice,
+            };
+        }
+
+    async getByRoomyDate(roomId: string, date: Date): Promise <Array<ReservationHsDto>>{
+        const reservations =  await this.dao.getByRoomyDate(roomId, date)
+        return reservations.map((reservation: Reservation) => {
+            return this.mapToReservation(reservation)
+        })
+    }
+
+    async delete(reservaId: string):Promise<any>{
+        return await this.dao.delete(reservaId)
     }
 
     async getReservasPorMes (idRoom: string, fechaInicioStr: string, fechaFinStr: string) {
