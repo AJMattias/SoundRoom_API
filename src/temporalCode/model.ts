@@ -15,7 +15,7 @@ export interface TempCode {
 }
 
 export interface TempCodeDoc extends Document {
-    _id: string;
+    id: string;
     email: string,
     password: string,
     verificationCode: string,

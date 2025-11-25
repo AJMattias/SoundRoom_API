@@ -419,7 +419,7 @@ export class UsersDao {
             idArtistType: document.idArtistType as unknown as string,
             idArtistStyle: document.idArtistStyle as unknown as string,
             idSalaDeEnsayo: document.idSalaDeEnsayo,
-            id: document._id,
+            id: document.id,
             isAdmin: document.isAdmin,
             estadoUsuario:document.estadoUsuario,
             enabled: document.enabled,

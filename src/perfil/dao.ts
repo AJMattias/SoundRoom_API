@@ -170,7 +170,7 @@ export class PerfilDao{
             name: document.name,
             createdAt: document.createdAt,
             deletedAt: document.deletedAt,
-            id: document._id,
+            id: document.id,
             permisos: document.permisos
         }
     }

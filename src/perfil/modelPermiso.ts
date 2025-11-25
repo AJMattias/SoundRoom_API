@@ -11,7 +11,7 @@ export interface Permiso{
 }
 
 export interface PermisoDoc extends Document{
-    _id: string;
+    id: string;
     name: string;
     createdAt: Date;
     deletedAt?: Date;

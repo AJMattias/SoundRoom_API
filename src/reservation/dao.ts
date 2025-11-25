@@ -18,7 +18,7 @@ export class ReservationDao{
             idOwner: document.idOwner,
             idUser: document.idUser,
             idRoom: document.idRoom,
-            id: document._id,
+            id: document.id,
             canceled: document.canceled,
             date: document.date,
             totalPrice: document.totalPrice,
