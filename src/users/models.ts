@@ -50,7 +50,7 @@ export interface User {
 
 
 export interface UserDoc extends Document {
-    _id: string;
+    id: string;
     name : string;
     lastName:  string;
     password: string;

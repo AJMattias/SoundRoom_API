@@ -25,7 +25,7 @@ export interface Reservation{
 ,}
 
 export interface ReservationDoc extends Document{
-    _id: string,
+    id: string,
     createdAt: Date,
     deletedAt:Date,
     idRoom: string,

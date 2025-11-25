@@ -11,7 +11,7 @@ export interface Reporte{
 }
 
 export interface ReportesDoc extends Document{
-    _id: string;
+    id: string;
     mes: number;
     cantidad:number;
 }

@@ -18,7 +18,7 @@ export interface Pago{
 }
 
 export interface PagoDoc extends Document{
-    _id: string,
+    id: string,
     createdAt: Date,
     name: string, 
     ccv: string,

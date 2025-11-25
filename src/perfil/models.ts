@@ -15,7 +15,7 @@ export interface Perfil{
 }
 
 export interface PerfilDoc extends Document{
-    _id: string;
+    id: string;
     name: string;
     createdAt: Date;
     deletedAt?: Date;

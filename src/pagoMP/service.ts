@@ -13,7 +13,7 @@ export class PagoMPService{;
 
     mapToPagoMP(document: PagoMPDoc): PagoMpDto{
         return{
-            id: document._id as string,
+            id: (document._id as unknown) as string,
             monto: document.monto,
             metodoPago: document.metodoPago,
             estado: document.estado,
@@ -200,7 +200,7 @@ export class PagoMPService{;
     }
 
     async updatePagoMP(updateDto: PagoMpDto): Promise<PagoMpDto | {message: string} > {
-        const pagoUpdated = await PagoModel.findByIdAndUpdate(updateDto.id, updateDto, { new: true }).exec();
+        const pagoUpdated = await PagoMPModel.findByIdAndUpdate(updateDto.id, updateDto, { new: true }).exec();
         if(!pagoUpdated) return {message: "No hay pagos"}
         return this.mapToPagoMP(pagoUpdated)    
     }

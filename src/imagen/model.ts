@@ -55,7 +55,7 @@ export interface Imagen {
 }
 
 export interface ImagenDoc extends Document{
-    _id: string;
+    id: string;
     url: string;
     titulo: string;
     descripcion: string;

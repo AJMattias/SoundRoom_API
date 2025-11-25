@@ -39,7 +39,7 @@ export interface SalaDeEnsayo{
 }
 
 export interface SalaDeEnsayoDoc extends Document{
-    _id: string;
+    id: string;
     nameSalaEnsayo: string;
     calleDireccion: string;
     numeroDireccion: number;

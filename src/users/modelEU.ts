@@ -13,7 +13,7 @@ export interface EstadoUsuario{
 }
 
 export interface EstadoUsuarioDoc extends Document{
-    _id: string;
+    id: string;
     createdAt: Date;
     deletedAt: Date;
     estado: string
