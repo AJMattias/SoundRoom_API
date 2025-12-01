@@ -17,30 +17,33 @@ export const route =(app: Application)=>{
     app.post("/pagos/webhook",
         run(async(req: Request, resp: Response)=>{
             try {
-        console.log('🔔 Webhook recibido de Mercado Pago');
-        const query = req.query;
-        console.log('Query Params:', query);
-        console.log('Body:', req.body);
-        // IMPORTANTE: Mercado Pago espera una respuesta rápida
-        // Procesamos de forma asíncrona pero respondemos inmediatamente
-        resp.status(200).send('OK');
-        
-        // Procesar la notificación en segundo plano
-        setTimeout(async () => {
-            try {
-            await service.instance.createPagoMp(req.body);
-            } catch (error) {
-            console.error('Error en procesamiento asíncrono:', error);
-            }
-        }, 0);
+                console.log('🔔 Webhook recibido de Mercado Pago');
+                const query = req.query;
+                console.log('Query Params:', query);
+                console.log('Body:', req.body);
+                const topic = query.topic as string;
+                const paymentId = query.id as string;
+                // IMPORTANTE: Mercado Pago espera una respuesta rápida
+                // Procesamos de forma asíncrona pero respondemos inmediatamente
+                resp.status(200).send('OK');
+                
+                // Procesar la notificación en segundo plano
+                setTimeout(async () => {
+                    try {
+                    await service.instance.createPagoMp(req.body, topic, paymentId);
+                    } catch (error) {
+                    console.error('Error en procesamiento asíncrono:', error);
+                    }
+                }, 0);
 
-        } catch (error) {
-            console.error('💥 Error en webhook:', error);
-            // Aún así respondemos OK para que MP no reintente inmediatamente
-            resp.status(200).send('OK');
+                } catch (error) {
+                    console.error('💥 Error en webhook:', error);
+                    // Aún así respondemos OK para que MP no reintente inmediatamente
+                    resp.status(200).send('OK');
+                }
             }
-        }
-    ))
+        )
+    )
     
     
     app.post("/pagos/createPreference",
@@ -121,10 +124,12 @@ export const route =(app: Application)=>{
         validateDto(PagoMpDto),
         
         run(async( req: any, resp: Response) => {
+            const topic = req.query.topic as string;
+            const paymentId = req.query.id as string;
             const dto: PagoMpDto = req.validatedBody;
             //const id = req.user.id 
             dto.id = req.user.id
-            const pagoCreated = await service.instance.createPagoMp(dto)
+            const pagoCreated = await service.instance.createPagoMp(dto, topic, paymentId)
             resp.json(pagoCreated)
         })
     )

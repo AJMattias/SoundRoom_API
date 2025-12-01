@@ -108,13 +108,12 @@ export class PagoMPService{;
     }
 
     // usando externale reference para actualizar pago, crear pagoMP y actualizar reserva
-    async createPagoMp(createPagoMp:any):Promise<any>{
-
+    async createPagoMp(createPagoMp:any, topic: string, paymentId: string):Promise<any>{
         try {
             console.log('🔔 Procesando notificación:', createPagoMp);
 
             const { type, ...data} = createPagoMp;
-            if (type !== 'payment') {
+            if (topic !== 'payment') {
                 throw new Error('Tipo de notificación no soportado');
             }
 
@@ -128,10 +127,10 @@ export class PagoMPService{;
                 throw new Error('No se encontró la reserva asociada al pago');
             }
 
-            const paymentId = data?.id;
-            if (!paymentId) {
-                throw new Error('ID de pago no proporcionado en la notificación');
-            }
+            // const paymentId = data?.id;
+            // if (!paymentId) {
+            //     throw new Error('ID de pago no proporcionado en la notificación');
+            // }
             
             //obtener los detalles de payment
             const paymentDetails = await MercadoPagoService.paymentClient.get({id: paymentId.toString()});
