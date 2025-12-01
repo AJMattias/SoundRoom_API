@@ -65,7 +65,7 @@ export class PagoMPService{;
             idRoom: reservaDto.idRoom,
             idOwner: reservaDto.idOwner,
             idUser: reservaDto.idUser,
-            date: reservaDto.date.toISOString(),
+            date: reservaDto.date,
             hsStart: reservaDto.hsStart,
             hsEnd: reservaDto.hsEnd,
             totalPrice: reservaDto.totalPrice,

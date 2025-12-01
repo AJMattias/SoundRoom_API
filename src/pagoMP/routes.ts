@@ -18,7 +18,9 @@ export const route =(app: Application)=>{
         run(async(req: Request, resp: Response)=>{
             try {
         console.log('🔔 Webhook recibido de Mercado Pago');
-        
+        const query = req.query;
+        console.log('Query Params:', query);
+        console.log('Body:', req.body);
         // IMPORTANTE: Mercado Pago espera una respuesta rápida
         // Procesamos de forma asíncrona pero respondemos inmediatamente
         resp.status(200).send('OK');
@@ -41,7 +43,7 @@ export const route =(app: Application)=>{
     ))
     
     
-    app.post("/pagos/createPreference/",
+    app.post("/pagos/createPreference",
         auth,
         validator.body("idRoom").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
         validator.body("idOwner").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED), 
@@ -114,7 +116,7 @@ export const route =(app: Application)=>{
 
     )
 
-    app.post('pagosMp/create', 
+    app.post("/pagosMp/create", 
         auth,
         validateDto(PagoMpDto),
         
