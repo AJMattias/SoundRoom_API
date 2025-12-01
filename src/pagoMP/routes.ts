@@ -40,6 +40,7 @@ export const route =(app: Application)=>{
         }
     ))
     
+    
     app.post("/pagos/createPreference/",
         auth,
         validator.body("idRoom").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
