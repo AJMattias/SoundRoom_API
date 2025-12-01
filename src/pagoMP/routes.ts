@@ -14,7 +14,7 @@ import { preferenceClient } from "../configuracion/mercadopago";
 
 export const route =(app: Application)=>{
 
-    app.post("/pagos/webhook",
+    app.post("/pagos/webhooks",
         run(async(req: Request, resp: Response)=>{
             try {
                 console.log('🔔 Webhook recibido de Mercado Pago');
