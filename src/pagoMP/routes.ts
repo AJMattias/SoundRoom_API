@@ -12,11 +12,9 @@ import { ErrorCode } from "../common/utils/constants";
 import { ValidatorUtils } from "../common/utils/validator_utils";
 import { preferenceClient } from "../configuracion/mercadopago";
 
-
-
 export const route =(app: Application)=>{
 
-    app.get("/pagosMp/webhook",
+    app.post("/pagos/webhook",
         run(async(req: Request, resp: Response)=>{
             try {
         console.log('🔔 Webhook recibido de Mercado Pago');
