@@ -50,27 +50,31 @@ export class PagoMPService{;
 
         if (!reservaGuardada) throw new Error("No se pudo crear la reserva para generar el pago")
 
+        const unitPriceWithTax = Number((reservaDto.totalPrice * 1.2).toFixed(2));
         // Crear el item para la preferencia
         const reservationItem: PreferenceItem = {
             id: reservaGuardada._id.toString(),
             title: `Reserva de Habitación - ${reservaDto.idRoom}`,
-            unit_price: reservaDto.totalPrice * 1.2,
+            unit_price: unitPriceWithTax,
             quantity: 1,
             currency_id: 'ARS',
             description: `Reserva para el ${reservationDate} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
             category_id: 'room_reservation'
         };
         
-        const externalReference = JSON.stringify({
-            idRoom: reservaDto.idRoom,
-            idOwner: reservaDto.idOwner,
-            idUser: reservaDto.idUser,
-            date: reservaDto.date,
-            hsStart: reservaDto.hsStart,
-            hsEnd: reservaDto.hsEnd,
-            totalPrice: reservaDto.totalPrice,
-            idReserva: reservaGuardada._id.toString()
-        });
+        // json muy grande 
+        //const externalReference = JSON.stringify({
+        //     idRoom: reservaDto.idRoom,
+        //     idOwner: reservaDto.idOwner,
+        //     idUser: reservaDto.idUser,
+        //     date: reservaDto.date,
+        //     hsStart: reservaDto.hsStart,
+        //     hsEnd: reservaDto.hsEnd,
+        //     totalPrice: reservaDto.totalPrice,
+        //     idReserva: reservaGuardada._id.toString()
+        // });
+        //guardar solo id reserva
+        const externalReference = reservaGuardada._id.toString();
 
         const preferenceData: CreatePreferenceRequest = {
             items: [reservationItem],
