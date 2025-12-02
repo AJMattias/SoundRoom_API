@@ -47,6 +47,7 @@ export class PagoMPService{;
             createdAt: new Date(),
         })
         const reservaGuardada = await reserva.save()
+        console.log('preference- reservaGuardada', reservaGuardada);
 
         if (!reservaGuardada) throw new Error("No se pudo crear la reserva para generar el pago")
 
@@ -80,7 +81,7 @@ export class PagoMPService{;
             items: [reservationItem],
             external_reference: externalReference,
             back_urls: {
-                success: `${process.env.FRONTEND_URL}/reservas/pago-exitoso`,
+                success: `${process.env.FRONTEND_URL}/reservas/pago-exitoso/${reservaDto.idRoom}/${reservaGuardada._id.toString()}`,
                 failure: `${process.env.FRONTEND_URL}/reservas/pago-fallido`,
                 pending: `${process.env.FRONTEND_URL}/reservas/pago-pendiente`
             },
