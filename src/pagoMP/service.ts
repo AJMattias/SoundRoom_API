@@ -121,23 +121,39 @@ export class PagoMPService{;
                 throw new Error('Tipo de notificación no soportado');
             }
 
-            const user = await ReservationModel.findById(JSON.parse(data.externalReference || '{}').idUser).exec();
-            if(!user){
-                throw new Error('No se encontró la reserva asociada al pago');
-            }
+            //obtener los detalles de payment
+            const paymentDetails = await MercadoPagoService.paymentClient.get({id: paymentId.toString()});
 
-            const owner = await ReservationModel.findById(JSON.parse(data.externalReference || '{}').idOwner).exec();
-            if(!owner){
-                throw new Error('No se encontró la reserva asociada al pago');
-            }
+            // const user = await ReservationModel.findById(JSON.parse(data.externalReference || '{}').idUser).exec();
+            // if(!user){
+            //     throw new Error('No se encontró la reserva asociada al pago');
+            // }
+
+            // const owner = await ReservationModel.findById(JSON.parse(data.externalReference || '{}').idOwner).exec();
+            // if(!owner){
+            //     throw new Error('No se encontró la reserva asociada al pago');
+            // }
 
             // const paymentId = data?.id;
             // if (!paymentId) {
             //     throw new Error('ID de pago no proporcionado en la notificación');
             // }
             
-            //obtener los detalles de payment
-            const paymentDetails = await MercadoPagoService.paymentClient.get({id: paymentId.toString()});
+            //buscar reserva por external reference
+            console.log('buscar reserva por external reference: ', paymentDetails.external_reference);
+            const reserva = await ReservationModel.findById(paymentDetails.external_reference).exec();
+            
+            if (!reserva) {
+                throw new Error('No se encontró la reserva asociada al pago');
+            }
+            const user = await ReservationModel.findById(reserva.idUser).exec();
+            if(!user){
+                throw new Error('No se encontró el usuario asociado a la reserva');
+            }
+            const owner = await ReservationModel.findById(reserva.idOwner).exec();
+            if(!owner){
+                throw new Error('No se encontró el propietario asociado a la reserva');
+            }
 
             console.log('💰 Detalles del pago obtenidos:', {
                 id: paymentDetails.id,
@@ -145,7 +161,7 @@ export class PagoMPService{;
                 external_reference: paymentDetails.external_reference
             });
 
-            const externalReferenceParsed = JSON.parse(paymentDetails.external_reference || '{}');
+            //const externalReferenceParsed = JSON.parse(paymentDetails.external_reference || '{}');
 
             if(paymentDetails.status){
                 const reservationStatus = this.mapPaymentStatus(paymentDetails.status);
@@ -153,7 +169,7 @@ export class PagoMPService{;
 
             // Procesar el pago y actualizar la reserva
             const reservaUpdated =await ReservationModel.findOneAndUpdate(
-                { _id: externalReferenceParsed.idReserva },
+                { _id: reserva.id },
                 { paymentStatus: paymentDetails.status?.toUpperCase() },
                 {new: true}
             );
