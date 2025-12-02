@@ -67,23 +67,14 @@ export class PagoMPService{;
         console.log('preference item: ', item);
         const reservationItem: PreferenceItem = {
             id: reservaGuardada._id.toString(),
-            title: `Reserva de Sala de Ensayo - ${reservaDto.date}`,
+            title: `Reserva de Sala de Ensayo`,
             unit_price: unitPriceWithTax,
             quantity: 1,
             currency_id: 'ARS',
             description: `Reserva para el ${reservationDate} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
             category_id: 'services'
         };
-        
-        // const reservationItem: PreferenceItem = {
-        //     id: reservaGuardada._id.toString(),
-        //     title: `Reserva de Sala de Ensayo - ${reservaDto.date}`,
-        //     unit_price: unitPriceWithTax,
-        //     quantity: 1,
-        //     currency_id: 'ARS',
-        //     description: `Reserva para el ${reservationDate} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
-        //     category_id: 'services'
-        // };
+    
         //guardar solo id reserva
         const externalReference = reservaGuardada._id.toString();
 
