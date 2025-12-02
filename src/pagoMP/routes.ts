@@ -11,39 +11,173 @@ import * as validator from "express-validator"
 import { ErrorCode } from "../common/utils/constants";
 import { ValidatorUtils } from "../common/utils/validator_utils";
 import { preferenceClient } from "../configuracion/mercadopago";
+import { WebhookUtils } from "./webhook-utils";
+import { TEMPORARY_REDIRECT } from "http-status-codes";
 
 export const route =(app: Application)=>{
 
+    // app.post("/pagos/webhooks",
+    //     run(async(req: Request, resp: Response)=>{
+    //         try {
+    //             console.log('🔔 Webhook recibido de Mercado Pago');
+    //             const query = req.query;
+    //             console.log('Query Params:', query);
+    //             console.log('Body:', req.body);
+    //             const topic = query.topic as string;
+    //             const paymentId = query.id as string;
+    //             // IMPORTANTE: Mercado Pago espera una respuesta rápida
+    //             // Procesamos de forma asíncrona pero respondemos inmediatamente
+    //             resp.status(200).send('OK');
+                
+    //             // Procesar la notificación en segundo plano
+    //             setTimeout(async () => {
+    //                 try {
+    //                 await service.instance.createPagoMp(req.body, topic, paymentId);
+    //                 } catch (error) {
+    //                 console.error('Error en procesamiento asíncrono:', error);
+    //                 }
+    //             }, 0);
+
+    //             } catch (error) {
+    //                 console.error('💥 Error en webhook:', error);
+    //                 // Aún así respondemos OK para que MP no reintente inmediatamente
+    //                 resp.status(200).send('OK');
+    //             }
+    //         }
+    //     )
+    // )
+
     app.post("/pagos/webhooks",
-        run(async(req: Request, resp: Response)=>{
+        run(async(req: Request, resp: Response) => {
             try {
-                console.log('🔔 Webhook recibido de Mercado Pago');
+                console.log('='.repeat(60));
+                console.log('🔔 WEBHOOK RECIBIDO - MERCADO PAGO');
+                console.log('='.repeat(60));
+                
+                // 1. Extraer datos
                 const query = req.query;
-                console.log('Query Params:', query);
-                console.log('Body:', req.body);
-                const topic = query.topic as string;
-                const paymentId = query.id as string;
-                // IMPORTANTE: Mercado Pago espera una respuesta rápida
-                // Procesamos de forma asíncrona pero respondemos inmediatamente
+                const body = req.body;
+                const headers = req.headers;
+                
+                // Log para debugging
+                console.log('📌 URL completa:', req.originalUrl);
+                console.log('📌 Headers:', {
+                    'x-signature': (headers['x-signature'] as string)?.substring(0, 50) + '...',
+                    'x-request-id': headers['x-request-id']
+                });
+                console.log('📌 Query params:', query);
+                console.log('📌 Body:', JSON.stringify(body, null, 2));
+                
+                // 2. Respuesta inmediata a Mercado Pago
+                // IMPORTANTE: Esto no detiene la ejecución, solo envía la respuesta
                 resp.status(200).send('OK');
                 
-                // Procesar la notificación en segundo plano
+                // 3. Procesamiento ASÍNCRONO después de responder
                 setTimeout(async () => {
                     try {
-                    await service.instance.createPagoMp(req.body, topic, paymentId);
+                        const webhookUtils = new WebhookUtils();
+                        
+                        // Obtener resourceId de diferentes fuentes posibles
+                        let resourceId = '';
+                        if (query.id) {
+                            resourceId = query.id as string;
+                        } else if (body.resource) {
+                            resourceId = body.resource;
+                        } else if (body.id) {
+                            resourceId = body.id;
+                        } else if (body.data?.id) {
+                            resourceId = body.data.id;
+                        }
+                        
+                        console.log('🔍 Resource ID identificado:', resourceId);
+                        
+                        // 4. Validar autenticidad del webhook
+                        const isValid = await webhookUtils.validateWebhookAuthenticity(
+                            headers as Record<string, string>,
+                            resourceId,
+                            query
+                        );
+                        
+                        if (!isValid) {
+                            console.error('❌ Webhook NO autenticado. No se procesará.');
+                            
+                            // // Registrar intento fallido (opcional)
+                            // await logFailedWebhook({
+                            //     url: req.originalUrl,
+                            //     query: query,
+                            //     body: body,
+                            //     headers: headers,
+                            //     reason: 'Firma inválida',
+                            //     timestamp: new Date()
+                            // });
+                            
+                            return;
+                        }
+                        
+                        console.log('✅ Webhook autenticado correctamente');
+                        
+                        // 5. Determinar tipo de evento
+                        const eventType = webhookUtils.determineEventType(
+                            query.topic as string,
+                            body
+                        );
+                        
+                        console.log('🎯 Tipo de evento:', eventType);
+                        
+                        // 6. Procesar según tipo de evento
+                        if (eventType === 'payment' && resourceId) {
+                            // Para pagos, obtener el ID correcto
+                            const paymentId = resourceId;
+                            
+                            console.log(`💰 Procesando pago ID: ${paymentId}`);
+                            
+                            // Llamar al servicio para procesar el pago
+                            await service.instance.createPagoMp({
+                                type: query.topic as string, 
+                                rawBody: body,
+                                queryParams: query,
+                                webhookHeaders: headers,
+                                eventType: eventType,
+                                validated: true,
+                                receivedAt: new Date()
+                            }, query.topic as string, paymentId);
+                            
+                            console.log(`✅ Pago ${paymentId} procesado exitosamente`);
+                            
+                        } else if (eventType === 'merchant_order') {
+                            console.log('🛒 Procesando orden de compra:', resourceId);
+                            // Aquí tu lógica para órdenes
+                            // await service.instance.procesarOrden(resourceId, body);
+                            
+                        } else {
+                            console.warn(`⚠️ Evento no manejado: ${eventType}`);
+                            console.log('Body recibido:', JSON.stringify(body, null, 2));
+                        }
+                        
                     } catch (error) {
-                    console.error('Error en procesamiento asíncrono:', error);
+                        console.error('💥 Error en procesamiento asíncrono:', error);
+                        
+                        // Registrar error (opcional)
+                        // await logWebhookError({
+                        //     url: req.originalUrl,
+                        //     error: error instanceof Error ? error.message : String(error),
+                        //     stack: error instanceof Error ? error.stack : undefined,
+                        //     timestamp: new Date()
+                        // });
                     }
-                }, 0);
-
-                } catch (error) {
-                    console.error('💥 Error en webhook:', error);
-                    // Aún así respondemos OK para que MP no reintente inmediatamente
-                    resp.status(200).send('OK');
-                }
+                }, 0); // setTimeout con 0 para ejecutar en el próximo tick del event loop
+                
+                console.log('📤 Respuesta 200 enviada a Mercado Pago');
+                console.log('🔄 Procesamiento asíncrono iniciado');
+                console.log('='.repeat(60));
+                
+            } catch (error) {
+                console.error('💥 Error en handler principal de webhook:', error);
+                // Aún así respondemos OK para que MP no reintente inmediatamente
+                resp.status(200).send('OK');
             }
-        )
-    )
+        })
+    );
     
     
     app.post("/pagos/createPreference",
