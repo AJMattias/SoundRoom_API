@@ -38,10 +38,12 @@ export class PagoMPService{;
     
 
     async createPreference(reservaDto: CreateReservaDto): Promise<string> {
-        const reservationDate = new Date(reservaDto.date).toLocaleDateString('es-ES');
+        let reserva
+        try {
+            const reservationDate = new Date(reservaDto.date).toLocaleDateString('es-ES');
 
         // Crear reserva con payment status pendiente:
-        const reserva = new ReservationModel({
+        reserva = new ReservationModel({
             ...reservaDto,
             payment_status: 'PENDIENTE',
             createdAt: new Date()
@@ -84,9 +86,16 @@ export class PagoMPService{;
         console.log('preference.sandbox_init_point', preference.sandbox_init_point);
         
         return preference.sandbox_init_point!;
+
+        } catch (error) {
+            //borrar reserva en caso de error    
+            await ReservationModel.findByIdAndDelete(reserva?._id);
+            console.error('Error creando preferencia de pago:', error);
+            throw new Error('No se pudo crear la preferencia de pago');
+        }
     }
 
-      private mapPaymentStatus(mpStatus: string): string {
+    private mapPaymentStatus(mpStatus: string): string {
         const statusMap: { [key: string]: string } = {
         'approved': 'CONFIRMADA',
         'pending': 'PENDIENTE',
@@ -96,7 +105,7 @@ export class PagoMPService{;
         'refunded': 'REEMBOLSADA',
         'charged_back': 'CONTESTADA'
         };
-        
+
         return statusMap[mpStatus] || 'PENDIENTE';
     }
 
