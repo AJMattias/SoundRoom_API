@@ -60,7 +60,7 @@ export class PagoMPService{;
             quantity: 1,
             currency_id: 'ARS',
             description: `Reserva para el ${reservationDate} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
-            category_id: 'room_reservation'
+            category_id: 'services'
         };
         
         // json muy grande 
