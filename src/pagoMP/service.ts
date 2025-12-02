@@ -43,9 +43,9 @@ export class PagoMPService{;
         // Crear reserva con payment status pendiente:
         const reserva = new ReservationModel({
             ...reservaDto,
-            paymentStatus: 'PENDIENTE',
-            createdAt: new Date(),
-        })
+            payment_status: 'PENDIENTE',
+            createdAt: new Date()
+        });
         const reservaGuardada = await reserva.save()
         console.log('preference- reservaGuardada', reservaGuardada);
 
@@ -171,7 +171,7 @@ export class PagoMPService{;
             // Procesar el pago y actualizar la reserva
             const reservaUpdated =await ReservationModel.findOneAndUpdate(
                 { _id: reserva.id },
-                { paymentStatus: paymentDetails.status?.toUpperCase() },
+                { payment_status: paymentDetails.status?.toUpperCase(),paymentDate: new Date() },
                 {new: true}
             );
 
