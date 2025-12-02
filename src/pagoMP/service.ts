@@ -55,25 +55,13 @@ export class PagoMPService{;
         // Crear el item para la preferencia
         const reservationItem: PreferenceItem = {
             id: reservaGuardada._id.toString(),
-            title: `Reserva de Habitación - ${reservaDto.idRoom}`,
+            title: `Reserva de Sala de Ensayo - ${reservaDto.date}`,
             unit_price: unitPriceWithTax,
             quantity: 1,
             currency_id: 'ARS',
             description: `Reserva para el ${reservationDate} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
             category_id: 'services'
         };
-        
-        // json muy grande 
-        //const externalReference = JSON.stringify({
-        //     idRoom: reservaDto.idRoom,
-        //     idOwner: reservaDto.idOwner,
-        //     idUser: reservaDto.idUser,
-        //     date: reservaDto.date,
-        //     hsStart: reservaDto.hsStart,
-        //     hsEnd: reservaDto.hsEnd,
-        //     totalPrice: reservaDto.totalPrice,
-        //     idReserva: reservaGuardada._id.toString()
-        // });
         //guardar solo id reserva
         const externalReference = reservaGuardada._id.toString();
 
