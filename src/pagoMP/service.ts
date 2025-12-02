@@ -44,9 +44,8 @@ export class PagoMPService{;
         const reserva = new ReservationModel({
             ...reservaDto,
             payment_status: 'PENDIENTE',
-            payent
-            createdAt: new Date(),
-        })
+            createdAt: new Date()
+        });
         const reservaGuardada = await reserva.save()
         console.log('preference- reservaGuardada', reservaGuardada);
 
