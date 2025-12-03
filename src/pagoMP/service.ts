@@ -87,6 +87,7 @@ export class PagoMPService{;
                 pending: `${process.env.FRONTEND_URL}/reservas/pago-pendiente`
             },
             auto_return: 'approved',
+            //notification_url: 'undefined/api/pagos/webhook',
             notification_url: `${process.env.BACKEND_URL}/api/pagos/webhook`,
             expires: true,
             expiration_date_from: new Date().toISOString(),
