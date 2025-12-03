@@ -94,6 +94,7 @@ export class PagoMPService{;
         };
 
         const preference = await preferenceClient.create({ body: preferenceData });
+        console.log('preference complete: ', preferenceData)
         console.log('preference.sandbox_init_point', preference.sandbox_init_point);
         
         return preference.sandbox_init_point!;
