@@ -178,8 +178,7 @@ export const route =(app: Application)=>{
             }
         })
     );
-    
-    
+
     app.post("/pagos/createPreference",
         auth,
         validator.body("idRoom").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
@@ -246,11 +245,8 @@ export const route =(app: Application)=>{
                 success: false,
                 error: 'No se pudo procesar la reserva'
             });
-
             }
-
         })
-
     )
 
     app.post("/pagosMp/create", 
