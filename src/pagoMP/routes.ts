@@ -99,33 +99,15 @@ export const route =(app: Application)=>{
                         );
                         
                         if (!isValid) {
-                            console.error('❌ Webhook NO autenticado. No se procesará.');
-                            
-                            // // Registrar intento fallido (opcional)
-                            // await logFailedWebhook({
-                            //     url: req.originalUrl,
-                            //     query: query,
-                            //     body: body,
-                            //     headers: headers,
-                            //     reason: 'Firma inválida',
-                            //     timestamp: new Date()
-                            // });
-                            
+                            console.error('❌ Webhook NO autenticado. No se procesará.')                            
                             return;
                         }
                         
                         console.log('✅ Webhook autenticado correctamente');
-                        
-                        // 5. Determinar tipo de evento
-                        const eventType = webhookUtils.determineEventType(
-                            query.topic as string,
-                            body
-                        );
-                        
-                        console.log('🎯 Tipo de evento:', eventType);
+
                         
                         // 6. Procesar según tipo de evento
-                        if (eventType === 'payment' && resourceId) {
+                        if (query.topic === 'payment' && resourceId) {
                             // Para pagos, obtener el ID correcto
                             const paymentId = resourceId;
                             
@@ -137,40 +119,30 @@ export const route =(app: Application)=>{
                                 rawBody: body,
                                 queryParams: query,
                                 webhookHeaders: headers,
-                                eventType: eventType,
                                 validated: true,
                                 receivedAt: new Date()
                             }, query.topic as string, paymentId);
                             
                             console.log(`✅ Pago ${paymentId} procesado exitosamente`);
                             
-                        } else if (eventType === 'merchant_order') {
+                        } else if (query.topic === 'merchant_order') {
                             console.log('🛒 Procesando orden de compra:', resourceId);
                             await service.instance.createPagoMpMerchant({
                                 type: query.topic as string, 
                                 rawBody: body,
                                 queryParams: query,
                                 webhookHeaders: headers,
-                                eventType: eventType,
                                 validated: true,
                                 receivedAt: new Date()
                             }, query.topic as string, query.id as string);
                             
                         } else {
-                            console.warn(`⚠️ Evento no manejado: ${eventType}`);
+                            console.warn(`⚠️ Evento topic no manejado: ${query.topic}`);
                             console.log('Body recibido:', JSON.stringify(body, null, 2));
                         }
                         
                     } catch (error) {
                         console.error('💥 Error en procesamiento asíncrono:', error);
-                        
-                        // Registrar error (opcional)
-                        // await logWebhookError({
-                        //     url: req.originalUrl,
-                        //     error: error instanceof Error ? error.message : String(error),
-                        //     stack: error instanceof Error ? error.stack : undefined,
-                        //     timestamp: new Date()
-                        // });
                     }
                 }, 0); // setTimeout con 0 para ejecutar en el próximo tick del event loop
                 
