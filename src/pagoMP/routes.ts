@@ -146,8 +146,15 @@ export const route =(app: Application)=>{
                             
                         } else if (eventType === 'merchant_order') {
                             console.log('🛒 Procesando orden de compra:', resourceId);
-                            // Aquí tu lógica para órdenes
-                            // await service.instance.procesarOrden(resourceId, body);
+                            await service.instance.createPagoMpMerchant({
+                                type: query.topic as string, 
+                                rawBody: body,
+                                queryParams: query,
+                                webhookHeaders: headers,
+                                eventType: eventType,
+                                validated: true,
+                                receivedAt: new Date()
+                            }, query.topic as string, query.id as string);
                             
                         } else {
                             console.warn(`⚠️ Evento no manejado: ${eventType}`);

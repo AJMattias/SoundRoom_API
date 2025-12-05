@@ -5,7 +5,7 @@ import { CreatePreferenceRequest, PagoMpDto, PreferenceItem } from "./dto";
 import { EstadoPagos } from "./enum";
 import { IPagoMP, PagoMPDoc, PagoMPModel } from "./model";
 import * as MercadoPagoService from "../configuracion/mercadopago";
-import { preferenceClient, paymentClient } from '../configuracion/mercadopago';
+import { preferenceClient, paymentClient, merchantOrderClient  } from '../configuracion/mercadopago';
 import * as Email from "../server/MailCtrl"
 
 
@@ -134,21 +134,6 @@ export class PagoMPService{;
 
             //obtener los detalles de payment
             const paymentDetails = await MercadoPagoService.paymentClient.get({id: paymentId.toString()});
-
-            // const user = await ReservationModel.findById(JSON.parse(data.externalReference || '{}').idUser).exec();
-            // if(!user){
-            //     throw new Error('No se encontró la reserva asociada al pago');
-            // }
-
-            // const owner = await ReservationModel.findById(JSON.parse(data.externalReference || '{}').idOwner).exec();
-            // if(!owner){
-            //     throw new Error('No se encontró la reserva asociada al pago');
-            // }
-
-            // const paymentId = data?.id;
-            // if (!paymentId) {
-            //     throw new Error('ID de pago no proporcionado en la notificación');
-            // }
             
             //buscar reserva por external reference
             console.log('buscar reserva por external reference: ', paymentDetails.external_reference);
@@ -202,6 +187,73 @@ export class PagoMPService{;
         
         return {status: 200, msg:'Pago procesado correctamente'};
     }
+
+     async createPagoMpMerchant(createPagoMp:any, topic: string, id: string):Promise<any>{
+        try {
+            console.log('🔔 Procesando notificación:', createPagoMp);
+
+            const { type, ...data} = createPagoMp;
+            if (topic !== 'merchant_order') {
+                throw new Error('Tipo de notificación no soportado');
+            }
+
+            //obtener los detalles de payment
+            const paymentDetails = await MercadoPagoService.merchantOrderClient.get({merchantOrderId: id.toString()});
+            console.log('payment detail merchan order: ', paymentDetails);
+
+            //buscar reserva por external reference
+            console.log('buscar reserva por external reference: ', paymentDetails.external_reference);
+            const reserva = await ReservationModel.findById(paymentDetails.external_reference).exec();
+            
+            if (!reserva) {
+                throw new Error('No se encontró la reserva asociada al pago');
+            }
+            const user = await ReservationModel.findById(reserva.idUser).exec();
+            if(!user){
+                throw new Error('No se encontró el usuario asociado a la reserva');
+            }
+            const owner = await ReservationModel.findById(reserva.idOwner).exec();
+            if(!owner){
+                throw new Error('No se encontró el propietario asociado a la reserva');
+            }
+
+            console.log('💰 Detalles del pago obtenidos:', {
+                id: paymentDetails.id,
+                status: paymentDetails.status,
+                external_reference: paymentDetails.external_reference
+            });
+
+            //const externalReferenceParsed = JSON.parse(paymentDetails.external_reference || '{}');
+
+            if(paymentDetails.status){
+                const reservationStatus = this.mapPaymentStatus(paymentDetails.status);
+            }
+
+            // Procesar el pago y actualizar la reserva
+            const reservaUpdated =await ReservationModel.findOneAndUpdate(
+                { _id: reserva.id },
+                { payment_status: paymentDetails.status?.toUpperCase(),paymentDate: new Date() },
+                {new: true}
+            );
+
+            const pago = new PagoMPModel(createPagoMp)
+            const pagoGuardado = await pago.save()
+            if(!pagoGuardado){
+                throw new Error('No se pudo guardar el pago en la base de datos');
+            }
+
+            //email a artista
+            await this.sendMailPiola(user.email, `Ud ha creado con exito la reserva para el dia ${reservaUpdated.date} a las ${reservaUpdated.hsStart} hasta las ${reservaUpdated.hsFin}. Gracias por elegir SoundRoom.`)
+            await this.sendMailPiola(owner.email, `Sea ha creado una reserva para el dia ${reservaUpdated.date} a las ${reservaUpdated.hsStart} hasta las ${reservaUpdated.hsFin} a una de sus salas de ensayo. Gracias por elegir SoundRoom.`)
+
+        } catch (error) {
+            console.error('💥 Error procesando notificación:', error);
+            throw error;
+        }
+        
+        return {status: 200, msg:'Pago procesado correctamente'};
+    }
+
 
     async sendMailPiola(to: string, message: string) {
         const mailOptions = {
