@@ -1,5 +1,5 @@
 // src/config/mercadopago.ts (ejemplo)
-import {MercadoPagoConfig, Payment} from 'mercadopago';
+import {MercadoPagoConfig, MerchantOrder, Payment} from 'mercadopago';
 import { Preference } from 'mercadopago';
 
 const client = new MercadoPagoConfig({ 
@@ -10,3 +10,4 @@ const client = new MercadoPagoConfig({
 // Esto es lo que usarás para crear las preferencias de pago.
 export const preferenceClient = new Preference(client);
 export const paymentClient = new Payment(client);
+export const merchantOrderClient = new MerchantOrder(client);
