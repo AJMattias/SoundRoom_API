@@ -133,7 +133,7 @@ export class PagoMPService{;
             }
 
             //obtener los detalles de payment
-            const paymentDetails = await MercadoPagoService.paymentClient.get({id: paymentId.toString()});
+            const paymentDetails = await paymentClient.get({id: paymentId.toString()});
             
             //buscar reserva por external reference
             console.log('buscar reserva por external reference: ', paymentDetails.external_reference);
@@ -198,7 +198,7 @@ export class PagoMPService{;
             }
 
             //obtener los detalles de payment
-            const paymentDetails = await MercadoPagoService.merchantOrderClient.get({merchantOrderId: id.toString()});
+            const paymentDetails = await merchantOrderClient.get({merchantOrderId: id.toString()});
             console.log('payment detail merchan order: ', paymentDetails);
 
             //buscar reserva por external reference
