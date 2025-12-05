@@ -88,7 +88,7 @@ export class PagoMPService{;
             },
             auto_return: 'approved',
             //notification_url: 'undefined/api/pagos/webhook',
-            notification_url: `${process.env.BACKEND_URL}/api/pagos/webhooks`,
+            notification_url: `${process.env.BACKEND_URL}/pagos/webhooks`,
             expires: true,
             expiration_date_from: new Date().toISOString(),
             expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString()
