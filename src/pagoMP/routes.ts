@@ -94,7 +94,7 @@ export const route =(app: Application)=>{
 
                 // 2. Respuesta inmediata a Mercado Pago
                 // IMPORTANTE: Esto no detiene la ejecución, solo envía la respuesta
-                resp.status(200).send('OK');
+                
                 
                 // 3. Procesamiento ASÍNCRONO después de responder
                 setTimeout(async () => {
@@ -165,11 +165,13 @@ export const route =(app: Application)=>{
                             console.log('Body recibido:', JSON.stringify(body, null, 2));
                         }
                         
+                        
                     } catch (error) {
                         console.error('💥 Error en procesamiento asíncrono:', error);
                     }
                 }, 0); // setTimeout con 0 para ejecutar en el próximo tick del event loop
                 
+                resp.status(200).send('OK');
                 console.log('📤 Respuesta 200 enviada a Mercado Pago');
                 console.log('🔄 Procesamiento asíncrono iniciado');
                 console.log('='.repeat(60));
