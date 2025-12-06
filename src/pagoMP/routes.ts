@@ -68,6 +68,30 @@ export const route =(app: Application)=>{
                 console.log('📌 Query params:', query);
                 console.log('📌 Body:', JSON.stringify(body, null, 2));
                 
+                const webhookUtils = new WebhookUtils();
+                        
+                // Obtener resourceId de diferentes fuentes posibles
+                let resourceId = '';
+                if (query.id) {
+                    resourceId = query.id as string;
+                } else if (body.resource) {
+                    resourceId = body.resource;
+                } else if (body.id) {
+                    resourceId = body.id;
+                } else if (body.data?.id) {
+                }
+                    
+                const isValid = await webhookUtils.validateWebhookAuthenticity(
+                    headers as Record<string, string>,
+                    resourceId,
+                    query
+                );
+
+                if (!isValid) {
+                    console.error('❌ Webhook NO autenticado. No se procesará.')                            
+                    return;
+                }
+
                 // 2. Respuesta inmediata a Mercado Pago
                 // IMPORTANTE: Esto no detiene la ejecución, solo envía la respuesta
                 resp.status(200).send('OK');
@@ -75,35 +99,35 @@ export const route =(app: Application)=>{
                 // 3. Procesamiento ASÍNCRONO después de responder
                 setTimeout(async () => {
                     try {
-                        const webhookUtils = new WebhookUtils();
+                        // const webhookUtils = new WebhookUtils();
                         
-                        // Obtener resourceId de diferentes fuentes posibles
-                        let resourceId = '';
-                        if (query.id) {
-                            resourceId = query.id as string;
-                        } else if (body.resource) {
-                            resourceId = body.resource;
-                        } else if (body.id) {
-                            resourceId = body.id;
-                        } else if (body.data?.id) {
-                            resourceId = body.data.id;
-                        }
+                        // // Obtener resourceId de diferentes fuentes posibles
+                        // let resourceId = '';
+                        // if (query.id) {
+                        //     resourceId = query.id as string;
+                        // } else if (body.resource) {
+                        //     resourceId = body.resource;
+                        // } else if (body.id) {
+                        //     resourceId = body.id;
+                        // } else if (body.data?.id) {
+                        //     resourceId = body.data.id;
+                        //}
                         
-                        console.log('🔍 Resource ID identificado:', resourceId);
+                        //console.log('🔍 Resource ID identificado:', resourceId);
                         
                         // 4. Validar autenticidad del webhook
-                        const isValid = await webhookUtils.validateWebhookAuthenticity(
-                            headers as Record<string, string>,
-                            resourceId,
-                            query
-                        );
+                        // const isValid = await webhookUtils.validateWebhookAuthenticity(
+                        //     headers as Record<string, string>,
+                        //     resourceId,
+                        //     query
+                        // );
                         
-                        if (!isValid) {
-                            console.error('❌ Webhook NO autenticado. No se procesará.')                            
-                            return;
-                        }
+                        // if (!isValid) {
+                        //     console.error('❌ Webhook NO autenticado. No se procesará.')                            
+                        //     return;
+                        // }
                         
-                        console.log('✅ Webhook autenticado correctamente');
+                        // console.log('✅ Webhook autenticado correctamente');
 
                         
                         // 6. Procesar según tipo de evento

@@ -42,63 +42,65 @@ export class PagoMPService{;
         try {
             const reservationDate = new Date(reservaDto.date).toLocaleDateString('es-ES');
 
-        // Crear reserva con payment status pendiente:
-        reserva = new ReservationModel({
-            ...reservaDto,
-            payment_status: 'PENDIENTE',
-            createdAt: new Date()
-        });
-        const reservaGuardada = await reserva.save()
-        console.log('preference- reservaGuardada', reservaGuardada);
 
-        if (!reservaGuardada) throw new Error("No se pudo crear la reserva para generar el pago")
+            // Crear reserva con payment status pendiente:
+            reserva = new ReservationModel({
+                ...reservaDto,
+                payment_status: 'PENDIENTE',
+                createdAt: new Date(),
+                date: reservationDate
+            });
+            const reservaGuardada = await reserva.save()
+            console.log('preference- reservaGuardada', reservaGuardada);
 
-        const unitPriceWithTax = Number((reservaDto.totalPrice * 1.2).toFixed(2));
-        // Crear el item para la preferencia
-        const item={
-            id: reservaGuardada._id.toString(),
-            title: `Reserva de Sala de Ensayo - ${reservaDto.date}`,
-            unit_price: unitPriceWithTax,
-            quantity: 1,
-            currency_id: 'ARS',
-            description: `Reserva para el ${reservationDate} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
-            category_id: 'services'
-        };
-        console.log('preference item: ', item);
-        const reservationItem: PreferenceItem = {
-            id: reservaGuardada._id.toString(),
-            title: `Reserva de Sala de Ensayo`,
-            unit_price: unitPriceWithTax,
-            quantity: 1,
-            currency_id: 'ARS',
-            description: `Reserva para el ${reservationDate} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
-            category_id: 'services'
-        };
-    
-        //guardar solo id reserva
-        const externalReference = reservaGuardada._id.toString();
+            if (!reservaGuardada) throw new Error("No se pudo crear la reserva para generar el pago")
 
-        const preferenceData: CreatePreferenceRequest = {
-            items: [reservationItem],
-            external_reference: externalReference,
-            back_urls: {
-                success: `${process.env.FRONTEND_URL}/reservas/pago-exitoso/${reservaDto.idRoom}/${reservaGuardada._id.toString()}`,
-                failure: `${process.env.FRONTEND_URL}/reservas/pago-fallido`,
-                pending: `${process.env.FRONTEND_URL}/reservas/pago-pendiente`
-            },
-            auto_return: 'approved',
-            //notification_url: 'undefined/api/pagos/webhook',
-            notification_url: `${process.env.BACKEND_URL}/pagos/webhooks`,
-            expires: true,
-            expiration_date_from: new Date().toISOString(),
-            expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString()
-        };
-
-        const preference = await preferenceClient.create({ body: preferenceData });
-        console.log('preference complete: ', preferenceData)
-        console.log('preference.sandbox_init_point', preference.sandbox_init_point);
+            const unitPriceWithTax = Number((reservaDto.totalPrice * 1.2).toFixed(2));
+            // Crear el item para la preferencia
+            const item={
+                id: reservaGuardada._id.toString(),
+                title: `Reserva de Sala de Ensayo - ${reservaDto.date}`,
+                unit_price: unitPriceWithTax,
+                quantity: 1,
+                currency_id: 'ARS',
+                description: `Reserva para el ${reservationDate} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
+                category_id: 'services'
+            };
+            console.log('preference item: ', item);
+            const reservationItem: PreferenceItem = {
+                id: reservaGuardada._id.toString(),
+                title: `Reserva de Sala de Ensayo`,
+                unit_price: unitPriceWithTax,
+                quantity: 1,
+                currency_id: 'ARS',
+                description: `Reserva para el ${reservationDate} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
+                category_id: 'services'
+            };
         
-        return preference.sandbox_init_point!;
+            //guardar solo id reserva
+            const externalReference = reservaGuardada._id.toString();
+
+            const preferenceData: CreatePreferenceRequest = {
+                items: [reservationItem],
+                external_reference: externalReference,
+                back_urls: {
+                    success: `${process.env.FRONTEND_URL}/reservas/pago-exitoso/${reservaDto.idRoom}/${reservaGuardada._id.toString()}`,
+                    failure: `${process.env.FRONTEND_URL}/reservas/pago-fallido`,
+                    pending: `${process.env.FRONTEND_URL}/reservas/pago-pendiente`
+                },
+                auto_return: 'approved',
+                //notification_url: 'undefined/api/pagos/webhook',
+                notification_url: `${process.env.BACKEND_URL}/pagos/webhooks`,
+                expires: true,
+                expiration_date_from: new Date().toISOString(),
+                expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+            };
+
+            const preference = await preferenceClient.create({ body: preferenceData });
+            console.log('preference complete: ', preferenceData)
+            console.log('preference.sandbox_init_point', preference.sandbox_init_point);
+            
+            return preference.sandbox_init_point!;
 
         } catch (error) {
             //borrar reserva en caso de error    
@@ -199,7 +201,7 @@ export class PagoMPService{;
 
             //obtener los detalles de payment
             const paymentDetails = await merchantOrderClient.get({merchantOrderId: id.toString()});
-            console.log('payment detail merchan order: ', paymentDetails);
+            console.log('payment detail merchant order: ', paymentDetails);
 
             //buscar reserva por external reference
             console.log('buscar reserva por external reference: ', paymentDetails.external_reference);
