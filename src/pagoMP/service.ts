@@ -195,6 +195,7 @@ export class PagoMPService{;
             console.log('🔔 Procesando notificación:', createPagoMp);
 
             const { type, ...data} = createPagoMp;
+            console.log('topic: ', topic, 'id: ', id)
             if (topic !== 'merchant_order') {
                 throw new Error('Tipo de notificación no soportado');
             }
