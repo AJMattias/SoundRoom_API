@@ -97,40 +97,10 @@ export const route =(app: Application)=>{
                 
                 
                 // 3. Procesamiento ASÍNCRONO después de responder
-                setTimeout(async () => {
+                //setTimeout(async () => {
                     try {
-                        // const webhookUtils = new WebhookUtils();
-                        
-                        // // Obtener resourceId de diferentes fuentes posibles
-                        // let resourceId = '';
-                        // if (query.id) {
-                        //     resourceId = query.id as string;
-                        // } else if (body.resource) {
-                        //     resourceId = body.resource;
-                        // } else if (body.id) {
-                        //     resourceId = body.id;
-                        // } else if (body.data?.id) {
-                        //     resourceId = body.data.id;
-                        //}
-                        
-                        //console.log('🔍 Resource ID identificado:', resourceId);
-                        
-                        // 4. Validar autenticidad del webhook
-                        // const isValid = await webhookUtils.validateWebhookAuthenticity(
-                        //     headers as Record<string, string>,
-                        //     resourceId,
-                        //     query
-                        // );
-                        
-                        // if (!isValid) {
-                        //     console.error('❌ Webhook NO autenticado. No se procesará.')                            
-                        //     return;
-                        // }
-                        
-                        // console.log('✅ Webhook autenticado correctamente');
-
-                        
-                        // 6. Procesar según tipo de evento
+                    
+                        //  Procesar según tipo de evento
                         if (query.topic === 'payment' && resourceId) {
                             // Para pagos, obtener el ID correcto
                             const paymentId = resourceId;
@@ -169,7 +139,7 @@ export const route =(app: Application)=>{
                     } catch (error) {
                         console.error('💥 Error en procesamiento asíncrono:', error);
                     }
-                }, 0); // setTimeout con 0 para ejecutar en el próximo tick del event loop
+               // }, 0); // setTimeout con 0 para ejecutar en el próximo tick del event loop
                 
                 resp.status(200).send('OK');
                 console.log('📤 Respuesta 200 enviada a Mercado Pago');
