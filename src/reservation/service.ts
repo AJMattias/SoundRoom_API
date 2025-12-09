@@ -5,6 +5,7 @@ import { Reservation, ReservationModel } from "./model";
 import * as Email from "../server/MailCtrl"
 import { User, UserModel } from "../users/models"
 import { SalaDeEnsayoModel } from "../sala_de_ensayo/model";
+import { parseDateDDMMYYYY } from "../common/utils/dateFormatter";
 var mongoose = require('mongoose');
 
 
@@ -45,6 +46,8 @@ export class ReservationService{
     }
 
     async createReservation(dto: CreateReservationDto, email: string): Promise<ReservationDto>{
+        //trasformar fecha a argentina
+        const correctDate: Date = parseDateDDMMYYYY(dto.date);
         const reservation = await this.dao.store({
             createdAt: new Date(),
             deletedAt: new Date(),
@@ -54,7 +57,7 @@ export class ReservationService{
             idOwner: dto.idOwner,
             idRoom: dto.idRoom,
             idUser: dto.idUser,
-            date: dto.date,
+            date: correctDate,
             totalPrice: dto.totalPrice
         })
         const msg=  "Usted ha realizado una reserva exitosamente. Gracias por elegir SoundRoom"
