@@ -92,9 +92,9 @@ export class PagoMPService{;
                 items: [reservationItem],
                 external_reference: externalReference,
                 back_urls: {
-                    success: `${process.env.FRONTEND_URL}/reservas/pago-exitoso/${reservaDto.idRoom}/${reservaGuardada._id.toString()}`,
-                    failure: `${process.env.FRONTEND_URL}/reservas/pago-fallido`,
-                    pending: `${process.env.FRONTEND_URL}/reservas/pago-pendiente`
+                    success: `${process.env.FRONTEND_URL}/reservas/pago-exitoso?idSala=${reservaDto.idRoom}&idReserva=${reservaGuardada._id.toString()}`,
+                    failure: `${process.env.FRONTEND_URL}/reservas/pago-fallido?idSala=${reservaDto.idRoom}&idReserva=${reservaGuardada._id.toString()}`,
+                    pending: `${process.env.FRONTEND_URL}/reservas/pago-pendiente?idSala=${reservaDto.idRoom}&idReserva=${reservaGuardada._id.toString()}`
                 },
                 auto_return: 'approved',
                 //notification_url: 'undefined/api/pagos/webhook',
