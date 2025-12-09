@@ -14,3 +14,4 @@ export function parseDateDDMMYYYY(dateString: string): Date {
     // Luego creamos el objeto Date con ese timestamp.
     return new Date(Date.UTC(year, month - 1, day));
 }
+
