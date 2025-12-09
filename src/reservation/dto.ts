@@ -68,7 +68,7 @@ export interface CreateReservaDto{
     hsStart: string;
     hsEnd: string;
     canceled: string;
-    date: Date;
+    date: string;
     totalPrice: number;
     canceledDate?: Date;
 }

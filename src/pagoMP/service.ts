@@ -9,6 +9,7 @@ import { preferenceClient, paymentClient, merchantOrderClient  } from '../config
 import * as Email from "../server/MailCtrl"
 import { Types } from "mongoose";
 import { UserModel } from "../users/models";
+import { parseDateDDMMYYYY } from "../common/utils/dateFormatter";
 
 
 export class PagoMPService{;
@@ -42,15 +43,20 @@ export class PagoMPService{;
     async createPreference(reservaDto: CreateReservaDto): Promise<string> {
         let reserva
         try {
-            const reservationDate = new Date(reservaDto.date).toLocaleDateString('es-ES');
-            console.log('Creating preference for reservation on date:', reservationDate);
-
+            // 1. Convertir la cadena 'dd/mm/aaaa' en un objeto Date VÁLIDO
+            const dateStringFromDTO: string = reservaDto.date as unknown as string; // Forzar el tipo a string si sabes que es la cadena
+            const correctDate: Date = parseDateDDMMYYYY(dateStringFromDTO);
+            
+            // Opcional: Validar que no sea Invalid Date antes de Mongoose
+            if (isNaN(correctDate.getTime())) {
+                throw new Error('La fecha calculada resultó ser inválida. Revisar la lógica de parsing.');
+            }
             // Crear reserva con payment status pendiente:
             reserva = new ReservationModel({
                 ...reservaDto,
                 payment_status: 'PENDIENTE',
                 createdAt: new Date(),
-                date: reservationDate
+                date: correctDate
             });
             const reservaGuardada = await reserva.save()
             console.log('preference- reservaGuardada', reservaGuardada);
@@ -65,7 +71,7 @@ export class PagoMPService{;
                 unit_price: unitPriceWithTax,
                 quantity: 1,
                 currency_id: 'ARS',
-                description: `Reserva para el ${reservationDate} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
+                description: `Reserva para el ${reservaDto.date} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
                 category_id: 'services'
             };
             console.log('preference item: ', item);
@@ -75,7 +81,7 @@ export class PagoMPService{;
                 unit_price: unitPriceWithTax,
                 quantity: 1,
                 currency_id: 'ARS',
-                description: `Reserva para el ${reservationDate} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
+                description: `Reserva para el ${reservaDto.date} de ${reservaDto.hsStart} a ${reservaDto.hsEnd}`,
                 category_id: 'services'
             };
         
