@@ -48,6 +48,11 @@ export class ReservationService{
     async createReservation(dto: CreateReservationDto, email: string): Promise<ReservationDto>{
         //trasformar fecha a argentina
         const correctDate: Date = parseDateDDMMYYYY(dto.date);
+        if (isNaN(correctDate.getTime())) {
+            // Si getTime() devuelve NaN, el objeto Date es "Invalid Date"
+            console.error('El objeto Date construido es inválido. Revisar los inputs:', dto.date);
+            throw new Error('Error de parsing: La fecha de entrada no pudo ser convertida a un objeto Date válido.');
+        }
         const reservation = await this.dao.store({
             createdAt: new Date(),
             deletedAt: new Date(),

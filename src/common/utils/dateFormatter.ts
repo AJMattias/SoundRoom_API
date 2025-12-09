@@ -9,6 +9,8 @@ export function parseDateDDMMYYYY(dateString: string): Date {
     const month = parseInt(match[2], 10);
     const year = parseInt(match[3], 10);
 
-    // RESTAR 1 al mes es crucial, ya que new Date() usa el índice 0-11
-    return new Date(year, month - 1, day);
+    // ✅ CAMBIO CLAVE: Usar Date.UTC() para crear una fecha universal
+    // Date.UTC devuelve el número de milisegundos desde 1970-01-01T00:00:00.000Z.
+    // Luego creamos el objeto Date con ese timestamp.
+    return new Date(Date.UTC(year, month - 1, day));
 }
