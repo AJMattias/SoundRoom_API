@@ -40,6 +40,20 @@ export interface CreateReservationDto{
     hsStart: string;
     hsEnd: string;
     canceled: string;
+    date: string;
+    totalPrice: number;
+    canceledDate?: Date;
+}
+
+export interface CreateReservationDtoDao{
+    createdAt?: Date;
+    deletedAt?:Date;
+    idRoom: string;
+    idOwner: string;
+    idUser: string;
+    hsStart: string;
+    hsEnd: string;
+    canceled: string;
     date: Date;
     totalPrice: number;
     canceledDate?: Date;

@@ -1,7 +1,7 @@
 import { ModelNotFoundException } from "../common/exception/exception"
 import {StringUtils} from "../common/utils/string_utils"
 import { ReservationModel, Reservation, ReservationSchema, ReservationDoc } from "./model"
-import { CreateReservationDto, DeleteReservationDto, ReservationDto } from "./dto"
+import { CreateReservationDto, CreateReservationDtoDao, DeleteReservationDto, ReservationDto } from "./dto"
 import { dangerouslyDisableDefaultSrc } from "helmet/dist/middlewares/content-security-policy"
 import { UserModel } from "../users/models"
 var mongoose = require('mongoose');
@@ -29,7 +29,7 @@ export class ReservationDao{
     }
     
 
-    async store(reservation: CreateReservationDto): Promise<Reservation>{
+    async store(reservation: CreateReservationDtoDao): Promise<Reservation>{
         const reservationDoc = await ReservationModel.create(
             {
                 createdAt: reservation.createdAt,
