@@ -7,6 +7,8 @@ import { IPagoMP, PagoMPDoc, PagoMPModel } from "./model";
 import * as MercadoPagoService from "../configuracion/mercadopago";
 import { preferenceClient, paymentClient, merchantOrderClient  } from '../configuracion/mercadopago';
 import * as Email from "../server/MailCtrl"
+import { Types } from "mongoose";
+import { UserModel } from "../users/models";
 
 
 export class PagoMPService{;
@@ -190,73 +192,217 @@ export class PagoMPService{;
         return {status: 200, msg:'Pago procesado correctamente'};
     }
 
-     async createPagoMpMerchant(createPagoMp:any, topic: string, id: string):Promise<any>{
+    async createPagoMpMerchant(createPagoMp: any, topic: string, id: string): Promise<any> {
         try {
-            console.log('🔔 Procesando notificación:', createPagoMp);
+            console.log('🔔 Procesando notificación merchant_order:', { id, topic });
 
-            const { type, ...data} = createPagoMp;
-            console.log('topic: ', topic, 'id: ', id)
             if (topic !== 'merchant_order') {
                 throw new Error('Tipo de notificación no soportado');
             }
 
-            //obtener los detalles de payment
-            const paymentDetails = await merchantOrderClient.get({merchantOrderId: id.toString()});
-            console.log('payment detail merchant order: ', paymentDetails);
-
-            //buscar reserva por external reference
-            console.log('buscar reserva por external reference: ', paymentDetails.external_reference);
-            const reserva = await ReservationModel.findById(paymentDetails.external_reference).exec();
+            // 1. Obtener merchant order
+            const merchantOrder = await merchantOrderClient.get({ merchantOrderId: id.toString() });
             
-            if (!reserva) {
-                throw new Error('No se encontró la reserva asociada al pago');
-            }
-            const user = await ReservationModel.findById(reserva.idUser).exec();
-            if(!user){
-                throw new Error('No se encontró el usuario asociado a la reserva');
-            }
-            const owner = await ReservationModel.findById(reserva.idOwner).exec();
-            if(!owner){
-                throw new Error('No se encontró el propietario asociado a la reserva');
+            if (!merchantOrder.id) {
+                throw new Error('Merchant order sin ID');
             }
 
-            console.log('💰 Detalles del pago obtenidos:', {
-                id: paymentDetails.id,
-                status: paymentDetails.status,
-                external_reference: paymentDetails.external_reference
+            console.log('📦 Merchant Order obtenida:', {
+                id: merchantOrder.id,
+                status: merchantOrder.status,
+                external_reference: merchantOrder.external_reference,
+                payments_count: merchantOrder.payments?.length || 0,
+                total_amount: merchantOrder.total_amount,
+                paid_amount: merchantOrder.paid_amount
             });
 
-            //const externalReferenceParsed = JSON.parse(paymentDetails.external_reference || '{}');
-
-            if(paymentDetails.status){
-                const reservationStatus = this.mapPaymentStatus(paymentDetails.status);
+            // 2. Buscar reserva
+            if (!merchantOrder.external_reference) {
+                throw new Error('Merchant order sin external_reference');
             }
 
-            // Procesar el pago y actualizar la reserva
-            const reservaUpdated =await ReservationModel.findOneAndUpdate(
-                { _id: reserva.id },
-                { payment_status: paymentDetails.status?.toUpperCase(),paymentDate: new Date() },
-                {new: true}
-            );
-
-            const pago = new PagoMPModel(createPagoMp)
-            const pagoGuardado = await pago.save()
-            if(!pagoGuardado){
-                throw new Error('No se pudo guardar el pago en la base de datos');
+            const reserva = await ReservationModel.findById(merchantOrder.external_reference).exec();
+            if (!reserva) {
+                throw new Error(`No se encontró la reserva: ${merchantOrder.external_reference}`);
             }
 
-            //email a artista
-            await this.sendMailPiola(user.email, `Ud ha creado con exito la reserva para el dia ${reservaUpdated.date} a las ${reservaUpdated.hsStart} hasta las ${reservaUpdated.hsFin}. Gracias por elegir SoundRoom.`)
-            await this.sendMailPiola(owner.email, `Sea ha creado una reserva para el dia ${reservaUpdated.date} a las ${reservaUpdated.hsStart} hasta las ${reservaUpdated.hsFin} a una de sus salas de ensayo. Gracias por elegir SoundRoom.`)
+            // 3. Buscar usuario y propietario
+            const user = await UserModel.findById(reserva.idUser).exec();
+            const owner = await UserModel.findById(reserva.idOwner).exec();
+            
+            if (!user || !owner) {
+                throw new Error('Usuario o propietario no encontrado');
+            }
+
+            // 4. Manejar caso SIN pagos
+            if (!merchantOrder.payments || merchantOrder.payments.length === 0) {
+                console.log('🔄 Merchant order sin pagos. Actualizando estado a PENDIENTE');
+                
+                await ReservationModel.findByIdAndUpdate(
+                    merchantOrder.external_reference,
+                    { 
+                        payment_status: 'PENDIENTE',
+                        merchant_order_id: merchantOrder.id.toString(),
+                        last_webhook_update: new Date()
+                    }
+                );
+                
+                return { 
+                    status: 200, 
+                    msg: 'Orden recibida sin pagos',
+                    estado: 'PENDIENTE'
+                };
+            }
+
+            // 5. Procesar cada pago (CORREGIDO con propiedades correctas)
+            console.log(`💰 Procesando ${merchantOrder.payments.length} pago(s)`);
+            
+            let pagoAprobado = false;
+            const pagosGuardados = [];
+
+            for (const payment of merchantOrder.payments) {
+                // Validar que el pago tenga ID
+                if (!payment.id) {
+                    console.warn('⚠️ Pago sin ID, saltando...');
+                    continue;
+                }
+
+                console.log(`💳 Procesando pago ${payment.id}, estado: ${payment.status}`);
+
+                // Crear objeto con las propiedades CORRECTAS
+                const pagoData: any = {
+                    // Campos requeridos de tu schema
+                    monto: payment.transaction_amount || payment.total_paid_amount || 0,
+                    metodoPago: 'mercadopago', // Por defecto, ya que merchant order no tiene payment_method_id
+                    estado: this.mapPaymentStatusToEstado(payment.status || 'pending'),
+                    nroTransaccion: payment.id.toString(),
+                    usuario: user._id.toString(),
+                    reserva: reserva._id.toString(),
+                    available: true,
+                    
+                    // Campos MP (algunos pueden quedar null)
+                    collectionId: payment.id.toString(), // Usamos payment.id como collectionId
+                    collectionStatus: payment.status || '',
+                    externalReference: merchantOrder.external_reference || '',
+                    merchantAccountId: '', // merchant_order no tiene este campo
+                    merchantOrderId: merchantOrder.id?.toString() || '',
+                    paymentId: payment.id.toString(),
+                    preferenceId: merchantOrder.preference_id || '',
+                    processingMode: '', // merchant_order no tiene este campo
+                    siteId: merchantOrder.site_id || '',
+                    paymentType: '', // merchant_order no tiene payment_type_id
+                    status: payment.status || ''
+                };
+
+                // Si necesitas más detalles del pago, debes obtenerlo con paymentClient
+                try {
+                    const paymentDetails = await paymentClient.get({ id: payment.id.toString() });
+                    // Ahora SÍ tienes accesso a payment_method_id, etc.
+                    pagoData.metodoPago = paymentDetails.payment_method_id || 'mercadopago';
+                    pagoData.paymentType = paymentDetails.payment_type_id || '';
+                    pagoData.processingMode = paymentDetails.processing_mode || '';
+                    
+                    // Copiar otros campos disponibles
+                    if (paymentDetails.collector_id) {
+                        pagoData.collectionId = paymentDetails.collector_id.toString();
+                    }
+                    if (paymentDetails.merchant_account_id) {
+                        pagoData.merchantAccountId = paymentDetails.merchant_account_id.toString();
+                    }
+                    
+                } catch (error: any) {
+                    console.error('💥 Error en createPagoMpMerchant:', error?.message || error);
+                    return { status: 500, msg: error?.message || 'Error interno' };
+                }
+
+                // Guardar pago
+                try {
+                    const pago = new PagoMPModel(pagoData);
+                    const pagoGuardado = await pago.save();
+                    pagosGuardados.push(pagoGuardado._id);
+                    console.log(`✅ Pago ${payment.id} guardado con ID: ${pagoGuardado._id}`);
+
+                    // Verificar si está aprobado
+                    if (payment.status === 'approved') {
+                        pagoAprobado = true;
+                    }
+                } catch (error) {
+                    console.error(`❌ Error guardando pago ${payment.id}:`, error);
+                }
+            }
+
+            // 6. Actualizar estado de la reserva
+            if (pagoAprobado) {
+                console.log('✅ Pago APROBADO encontrado. Actualizando reserva a PAGADA');
+                
+                await ReservationModel.findByIdAndUpdate(
+                    reserva._id,
+                    { 
+                        payment_status: 'PAGADA',
+                        paymentDate: new Date(),
+                        merchant_order_id: merchantOrder.id.toString(),
+                        payment_id: merchantOrder.payments.find(p => p.status === 'approved')?.id?.toString()
+                    }
+                );
+
+                // Enviar emails
+                await this.sendMailPiola(
+                    user.email, 
+                    `Reserva confirmada para ${reserva.date} ${reserva.hsStart}-${reserva.hsEnd}`
+                );
+                
+                await this.sendMailPiola(
+                    owner.email, 
+                    `Nueva reserva para ${reserva.date} ${reserva.hsStart}-${reserva.hsEnd}`
+                );
+
+            } else if (merchantOrder.payments.length > 0) {
+                // Actualizar con estado del último pago
+                const lastPayment = merchantOrder.payments[merchantOrder.payments.length - 1];
+                const status = lastPayment.status?.toUpperCase() || 'PENDIENTE';
+                
+                console.log(`ℹ️ Actualizando reserva a: ${status}`);
+                
+                await ReservationModel.findByIdAndUpdate(
+                    reserva._id,
+                    { 
+                        payment_status: status,
+                        merchant_order_id: merchantOrder.id.toString(),
+                        last_webhook_update: new Date()
+                    }
+                );
+            }
+
+            console.log(`✅ Procesamiento completado. ${pagosGuardados.length} pago(s) guardado(s)`);
+            return { 
+                status: 200, 
+                msg: 'Procesado correctamente',
+                pagos_guardados: pagosGuardados.length,
+                reserva_estado: pagoAprobado ? 'PAGADA' : 'PENDIENTE'
+            };
 
         } catch (error) {
             console.error('💥 Error procesando notificación:', error);
             throw error;
         }
-        
-        return {status: 200, msg:'Pago procesado correctamente'};
     }
 
+    // Función auxiliar para mapear estados de MP a tu Enum
+    private mapPaymentStatusToEstado(status: string): string {
+        const statusMap: { [key: string]: string } = {
+            'pending': 'EN_PROCESO',
+            'approved': 'APROBADO',
+            'authorized': 'AUTORIZADO',
+            'in_process': 'EN_PROCESO',
+            'in_mediation': 'EN_MEDIACION',
+            'rejected': 'RECHAZADO',
+            'cancelled': 'CANCELADO',
+            'refunded': 'REEMBOLSADO',
+            'charged_back': 'CONTRA_CARGO'
+        };
+        
+        return statusMap[status] || 'EN_PROCESO';
+    }
 
     async sendMailPiola(to: string, message: string) {
         const mailOptions = {
