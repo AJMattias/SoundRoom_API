@@ -43,7 +43,7 @@ export class PagoMPService{;
         let reserva
         try {
             const reservationDate = new Date(reservaDto.date).toLocaleDateString('es-ES');
-
+            console.log('Creating preference for reservation on date:', reservationDate);
 
             // Crear reserva con payment status pendiente:
             reserva = new ReservationModel({
