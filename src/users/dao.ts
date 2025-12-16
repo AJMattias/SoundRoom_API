@@ -143,19 +143,16 @@ export class UsersDao {
     //  idPerfil: (user.idPerfil != null)? StringUtils.toObjectId(user.idPerfil) : undefined, 
 
     async updateUser(userId: string, user: CreateUserDto): Promise<User> {
-        console.log('dao update user to update: ', user)
-        const newId = String(userId)
-        //const query = { id: StringUtils.toObjectId(userId) };
-        const query = { id: mongoose.Types.ObjectId(userId) };
-        const idUser = mongoose.Types.ObjectId(userId);
-        //atributos a actualizar : name:  dto.name,
-        const perfilId = mongoose.Types.ObjectId(user.idPerfil)
-
+        
         const userToUpdate = await UserModel.findById(userId)
-
         if(!userToUpdate){
             throw new Error
         }
+
+        console.log('dao update user to update: ', user)
+        const idUser = new mongoose.Types.ObjectId(userId);
+        const perfilId = new mongoose.Types.ObjectId(user.idPerfil)
+        
         const updated = await UserModel.findOneAndUpdate(
             {_id: idUser},
             {
