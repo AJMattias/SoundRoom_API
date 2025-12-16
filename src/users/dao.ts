@@ -156,19 +156,6 @@ export class UsersDao {
         if(!userToUpdate){
             throw new Error
         }
-
-                // last_name : dto.last_name,
-                // email: dto.email,
-                // password : dto.password,
-                // createdAt: dto.createdAt,
-                // deletedAt: dto.deletedAt,
-                // image_id: undefined,
-                // enabled: dto.enabled,
-                // idPerfil: dto.idPerfil,
-                // idArtistType: dto.idArtistType as unknown as string,
-                // idArtistStyle: dto.idArtistStyle as unknown as string,
-                // userType: dto.userType,
-                // idSalaDeEnsayo: dto.idSalaDeEnsayo
         const updated = await UserModel.findOneAndUpdate(
             {_id: idUser},
             {
@@ -184,12 +171,8 @@ export class UsersDao {
                     password: user.password,
                     enabledHistory: userToUpdate.enabledHistory,
                 }
-            //password tb?
-
-            //idPerfil: StringUtils.toObjectId(user.idPerfil)}, 
-            //idArtistType: (user.idArtistType != null)? StringUtils.toObjectId(user.idArtistType) : undefined,
-        },
-            {new: true}
+            },
+            {new: true, runValidators: true}
             /*
             *idPerfil: user.idPerfil,idPerfil: (user.idPerfil != null)? StringUtils.toObjectId(user.idPerfil) : undefined,
             * 
@@ -198,7 +181,7 @@ export class UsersDao {
             * image_id: user.image_id? StringUtils.toObjectId(user.image_id) : undefined
             */
            
-        ).exec()
+        ).populate('idPerfil').exec()
         if (!updated) {
             throw new ModelNotFoundException()
         }
