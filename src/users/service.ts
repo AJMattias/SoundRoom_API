@@ -153,6 +153,12 @@ export class UsersService{
    
     async updateUserState(userId: string, dto : CreateUserDto):Promise<UserDto>{
         //comparar atributo enabled y ejecutar segun cambia  
+        if(dto.enabled !== "habilitado" && dto.enabled !=="deshabilitado" && dto.enabled !=="baja"){
+            throw new Error(`Estado de usuario no reconocido: ${dto.enabled}, estados son: habilitado, deshabilitado, baja`);
+        }
+        if(!dto.enabled){
+            throw new Error(`El estado del usuario es obligatorio. habilitado, deshabilitado, baja`);
+        }
         try {
             //El usuario se da de baja, "eliminar perfil"
             if(dto.enabled === "baja"){

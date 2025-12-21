@@ -324,7 +324,7 @@ export class UsersDao {
         // y ya no funciona mas:
         console.log('userId: ', userId)
         console.log('stop disable user')
-        const idUser = mongoose.Types.ObjectId(userId);
+        const idUser = new mongoose.Types.ObjectId(userId);
          const updated = await UserModel.findOneAndUpdate(
             { _id: idUser, "enabledHistory.dateTo": null },
             { $set: { "enabledHistory.$.dateTo": new Date() } },

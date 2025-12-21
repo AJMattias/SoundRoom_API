@@ -109,6 +109,7 @@ export const route = (app: Application) => {
     }))
 
 
+
      app.put("/users/update/",
         auth,
         checkPermission(["EDITAR_PERFIL"]),
@@ -351,8 +352,8 @@ export const route = (app: Application) => {
                 const loginResponse = await service.instance.login(user.email, user.password)
                 resp.json( loginResponse)    
              }
-         )
-     )
+        ))
+
      app.post("/users2/", 
      validator.body("name").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
      validator.body("last_name").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
@@ -377,8 +378,8 @@ export const route = (app: Application) => {
          })
          resp.json(user)    
       }
-  )
-)
+    ))
+
      app.post("/auth", 
         validator.body("email").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
         validator.body("password").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),        
@@ -869,36 +870,6 @@ export const route = (app: Application) => {
         })
     );
         
-//---------------------------------- Enviar Enlace olvide mi coontraseña--------------------------------------
-
-//version vieja
-// app.post("/user/forgot-password", 
-//     run(async (req, res) => {
-//         const { email } = req.body;
-//         console.log('user/forgot-password- email:', email)
-//         const user = await UserModel.findOne({ email });
-//         console.log('usuario encontrado: ', user)
-//         if (!user) return res.status(400).json({ message: "Usuario no encontrado" });
-    
-//         // Generar token y expiración
-//         const token = crypto.randomBytes(32).toString("hex");
-//         user.resetPasswordToken = token;
-//         user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hora
-//         await user.save();
-    
-//         // Enlace de recuperación
-//         const resetLink = `http://localhost:19006/reset-password/${token}`;
-//         //await sendEmail(email, "Recuperación de contraseña", `Haz click en el siguiente enlace para restablecer tu contraseña: ${resetLink}`);
-//         await sendEmailAsync({
-//             to:email, 
-//             subject: "Recuperación de contraseña", 
-//             text:  `Haz click en el siguiente enlace para restablecer tu contraseña: ${resetLink}`})
-//         res.json({ message: "Revisa tu correo para restablecer tu contraseña",
-//             resetLink:' http://localhost:19006/reset-password/',
-//             token: token
-//          });
-//     })
-// );
 
 //nueva versionGEMINI:
     app.post("/user/forgot-password",
