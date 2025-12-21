@@ -15,38 +15,7 @@ import { WebhookUtils } from "./webhook-utils";
 import { TEMPORARY_REDIRECT } from "http-status-codes";
 
 export const route =(app: Application)=>{
-
-    // app.post("/pagos/webhooks",
-    //     run(async(req: Request, resp: Response)=>{
-    //         try {
-    //             console.log('🔔 Webhook recibido de Mercado Pago');
-    //             const query = req.query;
-    //             console.log('Query Params:', query);
-    //             console.log('Body:', req.body);
-    //             const topic = query.topic as string;
-    //             const paymentId = query.id as string;
-    //             // IMPORTANTE: Mercado Pago espera una respuesta rápida
-    //             // Procesamos de forma asíncrona pero respondemos inmediatamente
-    //             resp.status(200).send('OK');
-                
-    //             // Procesar la notificación en segundo plano
-    //             setTimeout(async () => {
-    //                 try {
-    //                 await service.instance.createPagoMp(req.body, topic, paymentId);
-    //                 } catch (error) {
-    //                 console.error('Error en procesamiento asíncrono:', error);
-    //                 }
-    //             }, 0);
-
-    //             } catch (error) {
-    //                 console.error('💥 Error en webhook:', error);
-    //                 // Aún así respondemos OK para que MP no reintente inmediatamente
-    //                 resp.status(200).send('OK');
-    //             }
-    //         }
-    //     )
-    // )
-
+    
     app.post("/pagos/webhooks",
         run(async(req: Request, resp: Response) => {
             try {
@@ -72,13 +41,13 @@ export const route =(app: Application)=>{
                         
                 // Obtener resourceId de diferentes fuentes posibles
                 let resourceId = '';
-                if (query.id) {
-                    resourceId = query.id as string;
-                } else if (body.resource) {
-                    resourceId = body.resource;
-                } else if (body.id) {
-                    resourceId = body.id;
-                } else if (body.data?.id) {
+                    if (query.id) {
+                        resourceId = query.id as string;
+                    } else if (body.resource) {
+                        resourceId = body.resource;
+                    } else if (body.id) {
+                        resourceId = body.id;
+                    } else if (body.data?.id) {
                 }
                     
                 const isValid = await webhookUtils.validateWebhookAuthenticity(
