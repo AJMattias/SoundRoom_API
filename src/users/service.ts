@@ -275,9 +275,20 @@ export class UsersService{
     //TODO-> Agregar funcion para cambiar el estado anterior, es decir agregar fecha hasta en
     //TODO-> enabledHistory y cambiar al estado nuevo
     
-    async updatePassword(userId: string, dto : CreateUserDto) : Promise<UserDto>{
-        console.log('dto update password: ', dto.password);
-        const passwordU = dto.password
+    async updatePassword(userId: string, oldpassword: string, password: string) : Promise<UserDto>{
+        if(oldpassword !== password){
+            throw new Error(`La nueva contraseña no puede ser igual a la anterior`);
+        }
+        const user = await this.dao.findById(userId)
+        if(!user){
+            throw new Error(`Usuario con id ${userId} no encontrado`);
+        }
+        if(user.password !== oldpassword){
+            throw new Error(`La contraseña antigua no coincide`);
+        }
+        console.log('old password user: ', oldpassword);
+        console.log('dto update password: ', password);
+        const passwordU = password
         return  this.mapToDto( 
             await this.dao.updatePassword(userId,passwordU)
         )

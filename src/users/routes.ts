@@ -294,10 +294,11 @@ export const route = (app: Application) => {
         async (req: any, res: Response) => {
         const userId = req.user.id;
         const password = req.body.password;
+        const oldPassword = req.body.oldpassword;
         console.log("datos recibidos, user id: ", userId);
         console.log("datos recibidos, password: ", password);
         try {
-            const response = await service.instance.updatePassword(userId, password);
+            const response = await service.instance.updatePassword(userId, oldPassword, password);
             res.status(200).json(response);
         } catch (error) {
             res.status(500).json({ error: 'Error al verificar contraseña' });       
@@ -324,28 +325,20 @@ export const route = (app: Application) => {
       //Todo recibir contraseña vieja y nueva
      app.post("/users/updatePassword/",
         validator.query("id").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
+        validator.query("oldpassword").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
+        validator.query("password").notEmpty().withMessage(ErrorCode.FIELD_REQUIRED),
         run(async (req: Request,resp: Response) => {
             const errors = validator.validationResult(req)
             if(errors && !errors.isEmpty()){
                 throw ValidatorUtils.toArgumentsException(errors.array())
             }
 
-            const dto = req.body
+            //const dto = req.body
+            const oldpassword = req.query.oldpassword as string
+            const password = req.query.password as string
             const id = req.query.id as string
-            const user = await service.instance.updatePassword(id,{
-                name: dto["name"],
-                last_name: dto["last_name"],
-                email: dto["email"],
-                password: dto["password"],
-                image_id: undefined,
-                idArtistType: dto["idArtistType"],
-                idArtistStyle: dto["idArtistStyle"],
-                idPerfil: dto["idPerfil"],
-                enabled: dto["enabled"],
-                userType: dto["userType"],
-                idSalaDeEnsayo: dto["idSalaDeEnsayo"],
-                tipoArtista: dto['tipoArtista']
-            })
+            const user = await service.instance.updatePassword(id, oldpassword, password)
+            
             resp.json(user)
      }))
      
