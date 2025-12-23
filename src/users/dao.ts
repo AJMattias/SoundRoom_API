@@ -61,7 +61,7 @@ export class UsersDao {
         return this.mapToUser(model)
     }
 
-    
+
 
     async findUsersBetwenDates(fechaI: Date,  fechaH: Date): Promise<Array<User>> {
        return(await UserModel.find({
@@ -382,9 +382,11 @@ export class UsersDao {
      * @returns {User} la instancia de User actualizada con su id
      */
     async updatePassword(userId: string, newPassword: string): Promise<User> {
+        console.log('update password user: ', userId);
+        console.log('update password user: ', newPassword);
         const updated = await UserModel.findByIdAndUpdate(userId, {
             password: newPassword
-        }).exec()
+        }, { new: true }).exec()
         if (!updated) throw new ModelNotFoundException()
         return this.mapToUser(updated)
     }
