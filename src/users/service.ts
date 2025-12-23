@@ -86,17 +86,19 @@ export class UsersService{
         return this.mapToDto(user)
     }
 
-    async cambiarContraseña(id: string, oldPassword: string): Promise <Boolean>{
+    async cambiarContraseña(id: string, oldPassword: string): Promise <any>{
+        console.log("service: datos recibidos: ", id, oldPassword);
         const user = await this.dao.findById(id)
+        console.log('contraseña vieja usuario: ', user.password);
         if(!user){
             throw new Error(`Usuario con id ${id} no encontrado`);
         }
         if(user.password !== oldPassword){
-            return false; // La contraseña antigua no coincide
+            return {status: 200, cambiar: true}; // La contraseña antigua no coincide
         }else if(user.password === oldPassword){
-            return true; // La contraseña antigua coincide
+            return {status: 200, cambiar: false}; // La contraseña antigua coincide
         }
-        return false;
+        return {status: 400, cambiar: false};
     }
 
     async findUserByEmail(email : string) : Promise<UserDto>{
