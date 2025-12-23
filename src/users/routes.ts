@@ -279,6 +279,8 @@ export const route = (app: Application) => {
         async (req: any, res: Response) => {
         const userId = req.user.id;
         const password = req.body.password;
+        console.log("datos recibidos, user id: ", userId);
+        console.log("datos recibidos, password: ", password);
         try {
             const response = await service.instance.cambiarContraseña(userId, password);
             res.status(200).json(response);
