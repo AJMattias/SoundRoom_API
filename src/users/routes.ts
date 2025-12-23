@@ -289,6 +289,21 @@ export const route = (app: Application) => {
         }
       })
 
+      app.post("/user/cambiarContraseña", 
+        auth,
+        async (req: any, res: Response) => {
+        const userId = req.user.id;
+        const password = req.body.password;
+        console.log("datos recibidos, user id: ", userId);
+        console.log("datos recibidos, password: ", password);
+        try {
+            const response = await service.instance.updatePassword(userId, password);
+            res.status(200).json(response);
+        } catch (error) {
+            res.status(500).json({ error: 'Error al verificar contraseña' });       
+        }
+      })
+
       app.put("/users/unsetAdmin/", async (req: Request, res: Response) => {
         const userId = req.query.id;
       
