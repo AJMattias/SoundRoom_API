@@ -61,6 +61,8 @@ export class UsersDao {
         return this.mapToUser(model)
     }
 
+    
+
     async findUsersBetwenDates(fechaI: Date,  fechaH: Date): Promise<Array<User>> {
        return(await UserModel.find({
             createdAt: {

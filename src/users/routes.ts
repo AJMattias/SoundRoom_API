@@ -273,6 +273,19 @@ export const route = (app: Application) => {
           res.status(500).json({ error: 'Error al actualizar usuario' });
         }
       });
+      
+      app.post("/user/verifyPassword", 
+        auth,
+        async (req: any, res: Response) => {
+        const userId = req.user.id;
+        const password = req.body.password;
+        try {
+            const response = await service.instance.cambiarContraseña(userId, password);
+            res.status(200).json(response);
+        } catch (error) {
+            res.status(500).json({ error: 'Error al verificar contraseña' });       
+        }
+      })
 
       app.put("/users/unsetAdmin/", async (req: Request, res: Response) => {
         const userId = req.query.id;
