@@ -276,7 +276,7 @@ export class UsersService{
     //TODO-> enabledHistory y cambiar al estado nuevo
     
     async updatePassword(userId: string, dto : CreateUserDto) : Promise<UserDto>{
-        //TODO recibir contraseña vieja y nueva. comparar contraseña vieja y actualizar contraseña, login con nueva contraseña
+        
         const passwordU = dto.password
         return  this.mapToDto( 
             await this.dao.updatePassword(userId,passwordU)
