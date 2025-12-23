@@ -73,6 +73,7 @@ export class UsersService{
             })
         )
     }
+    
     /**
      * Busca a un usuario a partir de una ID. 
      * Tira un ModelNotFoundException si no encuentra a la Entidad 
@@ -84,6 +85,20 @@ export class UsersService{
         const user = await this.dao.findById(id)
         return this.mapToDto(user)
     }
+
+    async cambiarContraseña(id: string, oldPassword: string): Promise <Boolean>{
+        const user = await this.dao.findById(id)
+        if(!user){
+            throw new Error(`Usuario con id ${id} no encontrado`);
+        }
+        if(user.password !== oldPassword){
+            return false; // La contraseña antigua no coincide
+        }else if(user.password === oldPassword){
+            return true; // La contraseña antigua coincide
+        }
+        return false;
+    }
+
     async findUserByEmail(email : string) : Promise<UserDto>{
         const user = await this.dao.findByEmail(email)
         return this.mapToDto(user)
