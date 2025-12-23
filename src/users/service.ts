@@ -276,7 +276,8 @@ export class UsersService{
     //TODO-> enabledHistory y cambiar al estado nuevo
     
     async updatePassword(userId: string, oldpassword: string, password: string) : Promise<UserDto>{
-        if(oldpassword !== password){
+        console.log('datos recibidos: ', oldpassword, password);
+        if(oldpassword === password){
             throw new Error(`La nueva contraseña no puede ser igual a la anterior`);
         }
         const user = await this.dao.findById(userId)
