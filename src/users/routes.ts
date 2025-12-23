@@ -289,7 +289,7 @@ export const route = (app: Application) => {
         }
       })
 
-      app.post("/user/cambiarContraseña", 
+      app.post("/user/cambiarContrasenia", 
         auth,
         async (req: any, res: Response) => {
         const userId = req.user.id;
