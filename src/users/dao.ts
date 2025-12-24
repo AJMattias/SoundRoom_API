@@ -386,7 +386,7 @@ export class UsersDao {
         console.log('update password user: ', newPassword);
         const updated = await UserModel.findByIdAndUpdate(userId, {
             password: newPassword
-        }, { new: true }).exec()
+        }, { new: true }).populate("idPerfil").exec()
         if (!updated) throw new ModelNotFoundException()
         return this.mapToUser(updated)
     }
