@@ -94,9 +94,9 @@ export class UsersService{
             throw new Error(`Usuario con id ${id} no encontrado`);
         }
         if(user.password !== oldPassword){
-            return {status: 200, cambiar: true}; // La contraseña antigua no coincide
+            return {status: 200, cambiar: false}; // La contraseña antigua no coincide
         }else if(user.password === oldPassword){
-            return {status: 200, cambiar: false}; // La contraseña antigua coincide
+            return {status: 200, cambiar: true}; // La contraseña antigua coincide
         }
         return {status: 400, cambiar: false};
     }
