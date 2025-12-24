@@ -299,7 +299,7 @@ export const route = (app: Application) => {
         console.log("datos recibidos, password: ", password);
         try {
             const response = await service.instance.updatePassword(userId, oldPassword, password);
-            res.status(200).json(response);
+            res.status(200).json({success: true, user: response});
         } catch (error) {
             res.status(500).json({ error: 'Error al verificar contraseña' });       
         }
