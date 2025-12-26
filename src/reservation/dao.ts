@@ -58,7 +58,7 @@ export class ReservationDao{
     }
 
     async getByUser(userId: string): Promise<Array<Reservation>>{
-        return (await ReservationModel.find({canceled: "false", idUser: userId}).populate("idOwner")
+        return (await ReservationModel.find({idUser: userId}).populate("idOwner")
         .populate("idRoom"))
         .map((doc: ReservationDoc)=>{
             return this.mapToReservation(doc)
