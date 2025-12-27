@@ -59,7 +59,15 @@ export class ReservationDao{
 
     async getByUser(userId: string): Promise<Array<Reservation>>{
         return (await ReservationModel.find({idUser: userId}).populate("idOwner")
-        .populate("idRoom"))
+         .populate({
+            path: "idRoom",
+            select: "nameSalaEnsayo precioHora imagenes horarios", // Solo traer estos campos
+            populate: {
+                path: "imagenes",
+                model: "Imagen",
+                select: "url titulo" // Solo traer ciertos campos de las imágenes
+            }
+        }))
         .map((doc: ReservationDoc)=>{
             return this.mapToReservation(doc)
         }
