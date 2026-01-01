@@ -61,7 +61,7 @@ export class ReservationDao{
         return (await ReservationModel.find({idUser: userId}).populate("idOwner")
          .populate({
             path: "idRoom",
-            select: "nameSalaEnsayo precioHora imagenes horarios", // Solo traer estos campos
+            select: "id nameSalaEnsayo precioHora imagenes horarios calleDireccion", // Solo traer estos campos
             populate: {
                 path: "imagenes",
                 model: "Imagen",
