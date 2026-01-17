@@ -152,8 +152,16 @@ export class ReservationService{
             return this.mapToDto(reservation)
         })
     }
+    
     async getReservationByUserAndRoom(userId: string, idRoom: string): Promise <Array<ReservationDto>>{
         const reservations =  await this.dao.getByUserAndRoom(userId, idRoom)
+        return reservations.map((reservation: Reservation) => {
+            return this.mapToDto(reservation)
+        })
+    }
+
+    async getReservationByUserAndOwner(userId: string, idOwner: string): Promise <Array<ReservationDto>>{
+        const reservations =  await this.dao.getByUserAndOwner(userId, idOwner)
         return reservations.map((reservation: Reservation) => {
             return this.mapToDto(reservation)
         })

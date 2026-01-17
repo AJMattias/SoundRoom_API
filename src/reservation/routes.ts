@@ -242,6 +242,21 @@ export const route = (app: Application) =>{
         resp.json(reservation) 
     }))
 
+     //idUser hace la reserva
+    app.get("/reservation/findReservationbyUserAndOwner/:userId/:ownerId",
+        auth,
+        run(async (req: Request,resp: Response) => {
+        const id = req.params.userId as string
+        //Probar una vez mas con este roomId en la query
+        const ownerId = req.params.ownerId as string;
+        // const dto = req.body
+        // const idRoom = dto["idRoom"]
+        console.log('ruta get opinion by user', id + ' and sala, idRoom: ', ownerId)
+        const reservation : ReservationDto[] = await  service.instance.getReservationByUserAndOwner(id, ownerId)
+        console.log('ruta reservation: ', reservation)
+        resp.json(reservation) 
+    }))
+
     app.get("/reservation/findReservationbyUserCanceled/",
         run(async (req: Request,resp: Response) => {
         const id = req.query.id as string

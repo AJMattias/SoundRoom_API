@@ -916,7 +916,7 @@ export const route = (app: Application) => {
                 await user.save();
 
                 // Enlace de recuperación
-                const resetLink = `http://localhost:5173/reset-password/${token}`;
+                const resetLink = `http://localhost:5173/olvide-contraseña/reset-password/${token}`;
 
                 try {
                     await sendEmailAsync({

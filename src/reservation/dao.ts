@@ -85,6 +85,17 @@ export class ReservationDao{
         )
     }
 
+    async getByUserAndOwner(userId: string, idOwner: string): Promise<Array<Reservation>>{
+        const idroom = mongoose.Types.ObjectId(idOwner);
+        //idUser hace la reserva
+        const iduser = mongoose.Types.ObjectId(userId);
+        return (await ReservationModel.find({canceled: "false", idUser: iduser, idOwner: idOwner}))
+        .map((doc: ReservationDoc)=>{
+            return this.mapToReservation(doc)
+        }
+        )
+    }
+
     async getById(reservationId: string): Promise<Reservation>{
         const model = await ReservationModel.findById(reservationId).populate('idRoom').exec()
         if (!model) throw new ModelNotFoundException()
