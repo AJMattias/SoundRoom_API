@@ -37,6 +37,9 @@ exports.sendEmail = function(req, res){
 };
 
 exports.sendEmailAsync = async (mailOptions) =>  {
+    console.log("Sending email to: ", mailOptions.to);
+    console.log("With subject: ", mailOptions.subject);
+    console.log("And text: ", mailOptions.text);
     var transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: {
