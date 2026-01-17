@@ -111,9 +111,12 @@ export class ReservationDao{
     }
 
     async getByOwnerA(ownerId: string): Promise<Array<Reservation>> {
+        const ownerIdObj = mongoose.Types.ObjectId(ownerId);
+
         return (
             await ReservationModel.find({
-            idOwner: ownerId,
+            idOwner: ownerIdObj,
+            canceled: "false"
             })
             .populate("idUser") // usuario que hizo la reserva
             .populate({
