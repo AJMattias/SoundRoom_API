@@ -75,9 +75,9 @@ export class ReservationDao{
     }
 
     async getByUserAndRoom(userId: string, idRoom: string): Promise<Array<Reservation>>{
-        const idroom = mongoose.Types.ObjectId(idRoom);
+        const idroom = new mongoose.Types.ObjectId(idRoom);
         //idUser hace la reserva
-        const iduser = mongoose.Types.ObjectId(userId);
+        const iduser = new mongoose.Types.ObjectId(userId);
         return (await ReservationModel.find({canceled: "false", idUser: iduser, idRoom: idroom}))
         .map((doc: ReservationDoc)=>{
             return this.mapToReservation(doc)
@@ -111,11 +111,13 @@ export class ReservationDao{
     }
 
     async getByOwnerA(ownerId: string): Promise<Array<Reservation>> {
-        const ownerIdObj = mongoose.Types.ObjectId(ownerId);
+        console.log('dao getReservaByOwner: ', ownerId);
+        const ownerIdObj = new mongoose.Types.ObjectId(ownerId);
+        console.log('ownerId type: ', ownerIdObj);
 
         return (
             await ReservationModel.find({
-            idOwner: ownerIdObj,
+            idOwner: ownerId,
             canceled: "false"
             })
             .populate("idUser") // usuario que hizo la reserva

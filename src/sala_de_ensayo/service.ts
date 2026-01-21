@@ -197,7 +197,7 @@ export class SalaService{
     async updateSalaDeEnsayo(id: string, dto: UpdateSalaDeEnsayoDto2): Promise<SalaDeEnsayoDto>{
         const sala = await this.dao.findById(id)
         console.log('sala encontrada id: ', id)
-        if(sala.enabled == dto.enabled){
+        if(sala.enabled! || sala.enabled === dto.enabled){
             console.log('service update Sala enabled iguales:', id)
             return this.mapToDto(
                 await this.dao.updateSala(id,dto 
@@ -630,6 +630,7 @@ async  obtenerCantidadValoraciones(idRoom: string) {
     }
     async getOpinionById(idOpinion: string): Promise<OpinionDto>{
         const opinion = await this.dao.getOpinionById(idOpinion)
+        console.log('service get opinion by id: ', opinion)
         return this.mapToDtoOpinion(opinion)
     }
 
@@ -652,6 +653,16 @@ async  obtenerCantidadValoraciones(idRoom: string) {
             };
         }));
         return opiniones;
+    }
+
+    async postOpinion(payload: any) {
+        // Validaciones de negocio aquí
+        if (!payload.idRoom || !payload.idUser) {
+            throw new Error("Faltan datos obligatorios");
+        }
+
+        // Llamada al DAO
+        return await this.dao.createOpinionUpdate(payload);
     }
 }
 
