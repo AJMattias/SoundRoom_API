@@ -133,7 +133,9 @@ export class ReservationService{
     }
 
     async getReservationByOwner(ownerId: string): Promise <Array<ReservationDto>>{
+        console.log('getReservationByOwner ownerId: ', ownerId);
         const reservations =  await this.dao.getByOwnerA(ownerId)
+        console.log('reservas encontradas: ', reservations);
         return reservations.map((reservation: Reservation) => {
             return this.mapToDto(reservation)
         })

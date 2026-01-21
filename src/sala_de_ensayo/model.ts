@@ -142,7 +142,7 @@ export const SalaDeEnsayoModel = mongoose.model<any>("Sala_De_Ensayo", SalaDeEns
 export const OpinionSchema = new Schema({ 
     descripcion: { 
         type: String,
-        maxlength: 300
+        maxlength: 400
     },
     estrellas:{
         type: Number

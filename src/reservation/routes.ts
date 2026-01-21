@@ -207,6 +207,7 @@ export const route = (app: Application) =>{
     app.get("/reservation/findReservationbyOwner/", 
         auth, 
         run(async (req: any ,resp: Response) => {
+        console.log(' ruta findReservationbyOwner, req.user.id: ', req.user.id);
         const id = req.user.id as string
         const reservation : ReservationDto[] = await  service.instance.getReservationByOwner(id)
         resp.json(reservation) 
