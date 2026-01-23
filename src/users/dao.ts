@@ -55,8 +55,8 @@ export class UsersDao {
      * async y un await. Ver :
      */
     async findById(userId: String): Promise<User> {
-
-        const model = await UserModel.findById(userId).populate('idPerfil').exec()
+        const id = new mongoose.Types.ObjectId(userId); 
+        const model = await UserModel.findById(id).populate('idPerfil').exec()
         if (!model) throw new ModelNotFoundException()
         return this.mapToUser(model)
     }
