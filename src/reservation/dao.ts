@@ -86,10 +86,10 @@ export class ReservationDao{
     }
 
     async getByUserAndOwner(userId: string, idOwner: string): Promise<Array<Reservation>>{
-        const idroom = mongoose.Types.ObjectId(idOwner);
+        const idOwnerObj = new mongoose.Types.ObjectId(idOwner);
         //idUser hace la reserva
-        const iduser = mongoose.Types.ObjectId(userId);
-        return (await ReservationModel.find({canceled: "false", idUser: iduser, idOwner: idOwner}))
+        const iduser = new mongoose.Types.ObjectId(userId);
+        return (await ReservationModel.find({canceled: "false", idUser: iduser, idOwner: idOwnerObj}))
         .map((doc: ReservationDoc)=>{
             return this.mapToReservation(doc)
         }
@@ -97,7 +97,7 @@ export class ReservationDao{
     }
 
     async getById(reservationId: string): Promise<Reservation>{
-        const model = await ReservationModel.findById(reservationId).populate('idRoom').exec()
+        const model = await ReservationModel.findById(reservationId).populate('idRoom').populate('idUser').exec()
         if (!model) throw new ModelNotFoundException()
         return this.mapToReservation(model)
     }
