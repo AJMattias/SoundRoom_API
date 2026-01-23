@@ -114,7 +114,7 @@ export class ReservationDao {
         canceled: "false",
         idUser: iduser,
         idOwner: idOwnerObj,
-      }).populate("idUser")
+      }).populate("idUser").populate("idRoom").exec()
     ).map((doc: ReservationDoc) => {
       return this.mapToReservation(doc);
     });
