@@ -578,12 +578,13 @@ export class SalaDeEnsayoDao {
     return this.mapToOpinion(opinionUpdatedDoc);
   }
 
+
   async getOpinionByUserAndRoom(
     idUser: string,
     idRoom: string,
   ): Promise<Opinion> {
-    const idroom = mongoose.Types.ObjectId(idRoom);
-    const iduser = mongoose.Types.ObjectId(idUser);
+    const idroom = new mongoose.Types.ObjectId(idRoom);
+    const iduser = new mongoose.Types.ObjectId(idUser);
 
     const opinionDoc = await OpinionModel.findOne({
       idUser: iduser,
@@ -658,6 +659,38 @@ export class SalaDeEnsayoDao {
 
     return savedOpinion;
   }
+
+  async getOpinionsByOwner(ownerId: string): Promise<Array<Opinion>> {
+    
+    try {
+      // 1. Buscamos las salas del owner (solo traemos el campo _id para optimizar)
+      const misSalas = await SalaDeEnsayoModel.find({ idOwner: ownerId }).select('_id');
+
+      if (!misSalas || misSalas.length === 0) {
+        return []; // El owner no tiene salas
+      }
+
+      // 2. Creamos un array con los IDs de las salas
+      const salaIds = misSalas.map(sala => sala._id);
+
+      // 3. Buscamos todas las opiniones cuyo idRoom esté en nuestra lista
+      // Usamos .populate si quieres ver los datos del usuario que opinó o la sala
+      const opiniones = await OpinionModel.find({
+        idRoom: { $in: salaIds }
+      })
+      .populate('idUser', 'name email, lastName _id') // Opcional: info del que comenta
+      .populate('idRoom', 'nameSalaEnsayo _id') // Opcional: saber a qué sala pertenece
+      .sort({ createdAt: -1 }); // Opcional: de más reciente a más antigua
+
+      return opiniones;
+    } catch (error) {
+      console.error("Error al obtener opiniones del owner:", error);
+      throw error;
+    }
+  
+  
+  }
+
 
   //TODO hacer delete de opinion y getters quizas
 

@@ -664,6 +664,13 @@ async  obtenerCantidadValoraciones(idRoom: string) {
         // Llamada al DAO
         return await this.dao.createOpinionUpdate(payload);
     }
+
+    async getOpinionsByOwner(idOwner: string): Promise<Array<OpinionDto>>{
+        const opiniones = await this.dao.getOpinionsByOwner(idOwner)
+        return opiniones.map((opinion: Opinion) => {
+            return this.mapToDtoOpinion(opinion)
+        })
+    }
 }
 
 export const instance = new SalaService(dao.instance)
