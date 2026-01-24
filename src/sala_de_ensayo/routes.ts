@@ -1725,27 +1725,27 @@ export const route = (app: Application) => {
     }),
   );
 
-  // app.get("/salasdeensayo/opinionesAmisSalas/",
-  //    auth,
-  //   run (async (req: any, res: Response)=>{
-  //       try {
-  //         const idUser = req.user.id
+  app.get("/salasdeensayo/opinionesAmisSalas/",
+    auth,
+    run (async (req: any, res: Response)=>{
+        try {
+          const idUser = req.user.id
 
-  //         const opiniones = service.instance.getMyAllOpiniones(idUser)
-  //         res.json({
-  //           status: "success",
-  //           data: {
-  //             opiniones,
-  //           },
-  //           message: "Opiniones obtenidas correctamente"
-  //         })
-  //       } catch (error) {
-  //         console.error(error);
-  //         return res.status(500).json({
-  //           status: "error",
-  //           message: "Error al obtener opiniones"
-  //         });
-  //       }
-  //   }
-  // ))
+          const opiniones = service.instance.getMyAllOpiniones(idUser)
+          res.json({
+            status: "success",
+            data: {
+              opiniones,
+            },
+            message: "Opiniones obtenidas correctamente"
+          })
+        } catch (error) {
+          console.error(error);
+          return res.status(500).json({
+            status: "error",
+            message: "Error al obtener opiniones"
+          });
+        }
+    }
+  ))
 };
