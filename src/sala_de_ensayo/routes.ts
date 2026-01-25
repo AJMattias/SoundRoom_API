@@ -1626,9 +1626,10 @@ export const route = (app: Application) => {
         );
         total += promedio;
       }
+      const totalFinal = (total / myRooms.length).toFixed(2);
       res.json({
         status: "success",
-        promedio: total,
+        promedio: totalFinal,
       });
     }),
   );
@@ -1662,7 +1663,7 @@ export const route = (app: Application) => {
         const opinionesIds = room.opiniones;
         const opinionesRoom = await OpinionModel.find({
           _id: { $in: opinionesIds },
-        });
+        }).populate("idUser");
         if (opinionesRoom.length === 0) {
           console.log("No hay opiniones para la sala:", room.nameSalaEnsayo);
           continue; // Si no hay opiniones, saltar a la siguiente sala
@@ -1725,16 +1726,17 @@ export const route = (app: Application) => {
     }),
   );
 
-  app.get("/salasdeensayo/opinionesAmisSalas/",
+  //No funciona
+  app.get("/salasdeensayo/opinionesAmisSalas2/",
     auth,
     run (async (req: any, res: Response)=>{
         try {
           const idUser = req.user.id
-
+          console.log('id owner: ', idUser)
           const opiniones = service.instance.getMyAllOpiniones(idUser)
           res.json({
             status: "success",
-            data: {
+            opiniones: {
               opiniones,
             },
             message: "Opiniones obtenidas correctamente"
