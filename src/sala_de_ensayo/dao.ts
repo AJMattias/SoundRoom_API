@@ -632,14 +632,14 @@ export class SalaDeEnsayoDao {
   }
 
   async getOpinionByRoom(idRoom: string): Promise<Array<Opinion>> {
-    const idroom = mongoose.Types.ObjectId(idRoom);
+    const idroom = new mongoose.Types.ObjectId(idRoom);
 
     const opinionDoc = await OpinionModel.find({ idRoom: idroom }).populate("idUser").exec();
-    console.log("dao getted opinion to room: ", opinionDoc);
     if (!opinionDoc) throw new ModelNotFoundException();
     const opinionDto: Opinion[] = opinionDoc.map((doc: OpinionDoc) => {
       return this.mapToOpinion(doc);
     });
+    console.log('dao get opinions a mis salas: ', opinionDoc);
     return opinionDto;
   }
 
