@@ -625,7 +625,10 @@ export class SalaDeEnsayoDao {
   async getOpinionToArtist(artistId: string): Promise<Array<Opinion>> {
     const idArtist = new mongoose.Types.ObjectId(artistId);
     return (
-      await OpinionModel.find({ idArtist: idArtist }).populate("idUser").exec()
+      await OpinionModel.find({ idArtist: idArtist })
+      .populate("idUser")
+      .populate("idRoom")
+      .exec()
     ).map((doc: OpinionDoc) => {
       return this.mapToOpinion(doc);
     });
