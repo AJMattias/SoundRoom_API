@@ -9,7 +9,7 @@ import { Imagen } from "../imagen/model";
 export enum DiasSemana {
   Lunes = 'Lunes',
   Martes = 'Martes',
-  Miercoles = 'Miércoles',
+  Miercoles = 'Miercoles',
   Jueves = 'Jueves',
   Viernes = 'Viernes',
   Sabado = 'Sábado',
