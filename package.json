@@ -54,7 +54,7 @@
     "pdf-lib": "^1.17.1",
     "proyecto_back": "file:",
     "sharp": "^0.33.2",
-    "typescript": "^4.4.3",
+    "typescript": "^5.0.0",
     "uuidv4": "^6.2.13"
   },
   "devDependencies": {
