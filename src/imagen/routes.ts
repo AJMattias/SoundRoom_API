@@ -173,7 +173,7 @@ router.get("/image/removeImage/", run(async (req: Request, res: Response) => {
 //     })
 //);
 
-router.post("/save", 
+router.post("/image/save", 
     upload.array('images', 10), // Multer sube los archivos a req.files[].buffer
     run(async (req: Request, res: Response) => {
         try {
