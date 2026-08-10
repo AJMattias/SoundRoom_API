@@ -12,7 +12,7 @@ export enum DiasSemana {
   Miercoles = 'Miercoles',
   Jueves = 'Jueves',
   Viernes = 'Viernes',
-  Sabado = 'Sábado',
+  Sabado = 'Sabado',
   Domingo = 'Domingo'
 }
 
