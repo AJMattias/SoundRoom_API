@@ -138,10 +138,16 @@ export class SoundRoomsServer {
 
             // **CORS CON LOGS**
             this._app.use(cors({
-                origin: '*', // Permite CUALQUIER origen. (Puedes cambiar a 'http://localhost:5173' en desarrollo)
-                methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-                preflightContinue: false,
-                optionsSuccessStatus: 204 // Mejor práctica para OPTIONS
+               origin: [
+                    'https://sound-room-front-web.vercel.app',
+                    'http://localhost:5173',
+                    'http://localhost:3000'
+                ],
+                methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+                allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+                credentials: true,
+                optionsSuccessStatus: 200,
+                preflightContinue: false
             }));
 
             // ... el resto de tu middleware
