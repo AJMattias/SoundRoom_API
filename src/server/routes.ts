@@ -52,7 +52,7 @@ export const routes = (app : express.Application) => {
     management_sala_de_ensayo.route(app)
     comision.route(app)
     email.route(app)
-    //imagen.route(app)
+    imagen.route(app)
     reservation.route(app)
     pago.route(app)
     pagoMP.route(app)    
